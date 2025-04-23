@@ -1,5 +1,5 @@
 name: "wsjcpp-employees"
-version: "v0.1.2"
+version: "v0.1.3"
 cmake_minimum_required: "3.0"
 cmake_cxx_standard: "11"
 description: "c++ classes for service-architecture"
@@ -17,7 +17,7 @@ keywords:
 
 dependencies:
   - name: "wsjcpp-core"
-    version: "v0.1.7"
+    version: "v0.2.0"
     url: "https://github.com/wsjcpp/wsjcpp-core:master"
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/wsjcpp_core"
@@ -26,12 +26,15 @@ distribution:
   - source-file: "src/wsjcpp_employees.h"
     target-file: "wsjcpp_employees.h"
     type: "source-code"
+    sha1: "4160d0bb44deeb4dd8ebeaefb010fa3db17697c8"
   - source-file: "src/wsjcpp_employees.cpp"
     target-file: "wsjcpp_employees.cpp"
     type: "source-code"
+    sha1: "ee972c58f9ab418c5ab4d423d90d8d5df30f7bb8"
   - source-file: "scripts.wsjcpp/generate.WsjcppEmploy"
     target-file: "generate.WsjcppEmploy"
     type: "safe-scripting-generate"
+    sha1: "61fde93ac6f3bf69e99480258dcf66d3dc789580"
 
 unit-tests:
   cases:
