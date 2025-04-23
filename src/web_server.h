@@ -23,16 +23,16 @@
  * SOFTWARE.
  ***********************************************************************************/
 
-#ifndef HTTP_SERVER_H
-#define HTTP_SERVER_H
+#ifndef WEB_SERVER_H
+#define WEB_SERVER_H
 
 #include <string>
 #include <json.hpp>
 #include "HttpService.h"
 
-class HttpServer {
+class WebServer {
     public:
-        HttpServer();
+        WebServer();
         hv::HttpService *getService();
         int httpApiV1GetPaths(HttpRequest* req, HttpResponse* resp);
         int httpAdmin(HttpRequest* req, HttpResponse* resp);
@@ -63,4 +63,4 @@ class HttpServer {
         std::string m_sCacheResponseTeamsJson;
 };
 
-#endif // CTF01D_HTTP_SERVER_H
+#endif // WEB_SERVER_H

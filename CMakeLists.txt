@@ -29,13 +29,13 @@ cmake_minimum_required(VERSION 3.18)
 
 project(cpp-basic-web-server)
 
-# include(${CMAKE_CURRENT_SOURCE_DIR}/src.wsjcpp/CMakeLists.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/src.wsjcpp/CMakeLists.txt)
 
 #### BEGIN_WSJCPP_APPEND
 #### END_WSJCPP_APPEND
 
 set(CMAKE_CXX_STANDARD 17)
-set(EXECUTABLE_OUTPUT_PATH ${ctf01d_SOURCE_DIR})
+set(EXECUTABLE_OUTPUT_PATH ${cpp-basic-web-server_SOURCE_DIR})
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # Sources
@@ -43,16 +43,13 @@ set(EXECUTABLE_OUTPUT_PATH ${ctf01d_SOURCE_DIR})
 # include header dirs
 list (APPEND WSJCPP_INCLUDE_DIRS "src")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/argument_processors")
-list (APPEND WSJCPP_INCLUDE_DIRS "src/checker")
-list (APPEND WSJCPP_INCLUDE_DIRS "src/scoreboard")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/employees")
-list (APPEND WSJCPP_INCLUDE_DIRS "src/store")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/3rdparty/sqlite3/src")
 
 # argument processors
 # list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_check.cpp")
 # list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_clean.cpp")
-# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_ctf01d_main.cpp")
+# list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_cpp-basic-web-server_main.cpp")
 # list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_services.cpp")
 # list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_start.cpp")
 # list (APPEND WSJCPP_SOURCES "./src/argument_processors/argument_processor_teams.cpp")
@@ -70,8 +67,8 @@ list (APPEND WSJCPP_INCLUDE_DIRS "src/3rdparty/sqlite3/src")
 # list (APPEND WSJCPP_SOURCES "src/checker/dorunchecker.cpp")
 # list (APPEND WSJCPP_SOURCES "src/checker/service_checker_thread.cpp")
 
-# http_server
-list (APPEND WSJCPP_SOURCES "src/http_server.cpp")
+# web_server
+list (APPEND WSJCPP_SOURCES "src/web_server.cpp")
 
 # scoreboard
 # list (APPEND WSJCPP_SOURCES "src/scoreboard/scoreboard.cpp")
@@ -112,13 +109,13 @@ list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src/3rdparty/sqlite3/src
 
 include_directories(${WSJCPP_INCLUDE_DIRS})
 
-add_executable (ctf01d ${WSJCPP_SOURCES})
+add_executable (cpp-basic-web-server ${WSJCPP_SOURCES})
 
-target_link_libraries(ctf01d -lpthread ${WSJCPP_LIBRARIES} )
+target_link_libraries(cpp-basic-web-server -lpthread ${WSJCPP_LIBRARIES} )
 
 install(
     TARGETS
-        ctf01d
+        cpp-basic-web-server
     RUNTIME DESTINATION
         ${CMAKE_INSTALL_PREFIX}/bin
 )

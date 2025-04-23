@@ -23,7 +23,6 @@
  * SOFTWARE.
  ***********************************************************************************/
 
-// #include <argument_processor_ctf01d_main.h>
 // #include <wsjcpp_core.h>
 // #include <employ_config.h>
 
@@ -66,9 +65,5 @@ int main(int argc, const char* argv[]) {
     // // // server.ws = pWs;
     // // websocket_server_run(&server);
 
-    // ArgumentProcessorCtf01dMain *pMain = new ArgumentProcessorCtf01dMain();
-    // WsjcppArguments prog(argc, argv, pMain);
-    // int nRet = prog.exec();
-    // return nRet;
     return 0;
 }
