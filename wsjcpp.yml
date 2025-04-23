@@ -1,0 +1,12 @@
+name: "cpp-basic-web-server"
+version: v0.0.1
+cmake_minimum_required: "3.0"
+cmake_cxx_standard: "17"
+description: ""
+
+authors:
+  - name: "Evgenii Sopov"
+    email: "mrseakg@gmail.com"
+
+keywords:
+  - "c++"
