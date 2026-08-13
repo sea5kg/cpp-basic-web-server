@@ -6,6 +6,9 @@ web-sites:
   "sea5kg.ru":
     git-repository: https://github.com/sea5kg/sea5kg_ru
     html-folder: ./html
+  "sea5kg.ru/pipeline-editor-s5":
+    git-repository: https://github.com/sea-kg/pipeline-editor-s5
+    html-folder: ./html
   "wsjcpp.org":
     git-repository: https://github.com/wsjcpp/wsjcpp-org
     html-folder: ./web
