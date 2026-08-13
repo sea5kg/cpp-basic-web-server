@@ -2,6 +2,20 @@
 html-folder: ./html
 port: 10233
 
+repositories:
+  repo-sea5kg:
+    type: git
+    url: https://github.com/sea5kg/sea5kg_ru
+    webhook-update: r6zyNcCTAw
+  repo-pipeline-editor-s5:
+    type: git
+    url: https://github.com/sea5kg/pipeline-editor-s5
+    webhook-update: cNt20Tm0zU
+  repo-wsjcpp-org:
+    type: git
+    url: https://github.com/wsjcpp/wsjcpp-org
+    webhook-update: tgNi7sZiQV
+
 web-sites:
   "sea5kg.ru":
     git-repository: https://github.com/sea5kg/sea5kg_ru
