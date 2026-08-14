@@ -16,6 +16,14 @@ repositories:
     url: https://github.com/wsjcpp/wsjcpp-org
     webhook-update: tgNi7sZiQV
 
+mapping-html-folders:
+  "sea5kg.ru": "${repo-sea5kg-ru}/html"
+  "localhost/sea5kg.ru": "${repo-sea5kg-ru}/html"
+  "sea5kg.ru/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
+  "localhost/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
+  "wsjcpp.org": "${repo-wsjcpp-org}/web"
+  "localhost/wsjcpp.org/": "${repo-pipeline-editor-s5}/html"
+
 web-sites:
   "sea5kg.ru":
     git-repository: https://github.com/sea5kg/sea5kg_ru

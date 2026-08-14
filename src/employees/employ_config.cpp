@@ -85,11 +85,6 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
   for (int i = 0; i < repositories.size(); i++) {
     std::string key = repositories[i];
     WsjcppYamlCursor cur = yaml["repositories"][key];
-    // TODO read type and webhook
-    // repo-sea5kg:
-    //     type: git
-    //     url: https://github.com/sea5kg/sea5kg_ru
-    //     webhook-update: r6zyNcCTAw
 
     std::string repos_folder = repos_dir + "/" + key;
     std::string git_repo = cur["url"];
