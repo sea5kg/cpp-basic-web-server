@@ -41,6 +41,7 @@ public:
   int getPort() const;
 
   std::map<std::string, std::string> web_sites() const;
+  std::map<std::string, std::string> repositories() const;
 
   // // IMyImpl
   // virtual void doSomething() override;
@@ -54,4 +55,5 @@ private:
   std::string m_sHtmlFolder;
   int m_nPort;
   std::map<std::string, std::string> m_web_sites;
+  std::map<std::string, std::string> m_repositories;
 };

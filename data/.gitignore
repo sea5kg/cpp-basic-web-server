@@ -1,3 +1,4 @@
 /web-sites
+/repositories
 !config.yml
 !/config.d

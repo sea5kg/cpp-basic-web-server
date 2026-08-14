@@ -3,7 +3,7 @@ html-folder: ./html
 port: 10233
 
 repositories:
-  repo-sea5kg:
+  repo-sea5kg-ru:
     type: git
     url: https://github.com/sea5kg/sea5kg_ru
     webhook-update: r6zyNcCTAw

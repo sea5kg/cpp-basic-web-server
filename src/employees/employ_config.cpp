@@ -76,6 +76,31 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
 
   m_nPort = yaml["port"].valInt();
 
+  // repositories
+  std::string repos_dir = m_sConfigDir + "/repositories";
+  if (!WsjcppCore::dirExists(repos_dir)) {
+    WsjcppCore::makeDirsPath(repos_dir);
+  }
+  std::vector<std::string> repositories = yaml["repositories"].keys();
+  for (int i = 0; i < repositories.size(); i++) {
+    std::string key = repositories[i];
+    WsjcppYamlCursor cur = yaml["repositories"][key];
+    // TODO read type and webhook
+    // repo-sea5kg:
+    //     type: git
+    //     url: https://github.com/sea5kg/sea5kg_ru
+    //     webhook-update: r6zyNcCTAw
+
+    std::string repos_folder = repos_dir + "/" + key;
+    std::string git_repo = cur["url"];
+    if (!WsjcppCore::dirExists(repos_folder)) {
+      std::string command = "git clone " + git_repo + " " + repos_folder;
+      system(command.c_str());
+    }
+    m_web_sites[key] = repos_folder;
+  }
+
+  // web-sites
   std::string web_sites_dir = m_sConfigDir + "/web-sites";
   if (!WsjcppCore::dirExists(web_sites_dir)) {
     WsjcppCore::makeDirsPath(web_sites_dir);
@@ -104,6 +129,10 @@ int EmployConfig::getPort() const {
 
 std::map<std::string, std::string> EmployConfig::web_sites() const {
   return m_web_sites;
+}
+
+std::map<std::string, std::string> EmployConfig::repositories() const {
+  return m_repositories;
 }
 
 // void EmployMyImpl::doSomething() {
