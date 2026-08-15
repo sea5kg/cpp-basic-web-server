@@ -32,7 +32,7 @@
 #include "hlog.h"
 #include <regex>
 #include <wsjcpp_core.h>
-#include <wsjcpp_jsonrpc20.h>
+// #include <wsjcpp_jsonrpc20.h>
 
 
 using namespace hv;
@@ -50,7 +50,7 @@ WebServer::WebServer() {
   //     logger_t* pLogger = hv_default_logger();
   //     // logger_set_max_filesize(pLogger, 102400);
   //     std::string sLogDirPath = m_pConfig->getWorkDir() + "/hv_logs";
-  //     if (!WsjcppCore::dirExists(sLogDirPath)) {
+  //     if (!wsjcpp::dir_exists(sLogDirPath)) {
   //         WsjcppCore::makeDir(sLogDirPath);
   //     }
   //     std::string sLogFilePath = sLogDirPath + "/http_" + WsjcppCore::getCurrentTimeForFilename() + ".log";
@@ -94,7 +94,7 @@ int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
   } else {
     sRequestPath = sOriginalRequestPath;
   }
-  sRequestPath = wsjcpp::normalizeFilePath(sRequestPath);
+  sRequestPath = wsjcpp::normalize_filepath(sRequestPath);
 
   // WsjcppLog::info(TAG, "sRequestPath = " + sRequestPath);
   if (sRequestPath == "/api" || sRequestPath == "/api/") {
@@ -112,8 +112,8 @@ int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
 
   // TODO
   WsjcppLog::info(TAG, "Request path: " + sRequestPath);
-  std::string sFilePath = sRequestPath = wsjcpp::normalizeFilePath(html_folder + "/" + sRequestPath);
-  if (WsjcppCore::fileExists(sFilePath)) { // TODO check the file exists not dir
+  std::string sFilePath = sRequestPath = wsjcpp::normalize_filepath(html_folder + "/" + sRequestPath);
+  if (wsjcpp::file_exists(sFilePath)) { // TODO check the file exists not dir
     return resp->File(sFilePath.c_str());
   }
   // cache
@@ -159,7 +159,7 @@ int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
 
   std::string sMethod = req_json_body["method"];
 
-  auto *pHandler = WsjcppJsonRpc20::findJsonRpc20Handler(sMethod);
+  // auto *pHandler = WsjcppJsonRpc20::findJsonRpc20Handler(sMethod);
 
   // auto *pClient = new WsjcppJsonRpc20WebSocketClient();
   // pClient->set
@@ -175,9 +175,9 @@ int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
 
   // pHandler->handle(WsjcppJsonRpc20Request *pRequest);
 
-  if (!pHandler) {
-      return 400;
-  }
+  // if (!pHandler) {
+  //     return 400;
+  // }
 
   // WsjcppJsonRpc20 {
   // public:

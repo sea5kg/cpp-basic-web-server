@@ -27,7 +27,7 @@
 #include <wsjcpp_core.h>
 #include <wsjcpp_yaml.h>
 
-REGISTRY_WJSCPP_SERVICE_LOCATOR(EmployConfig)
+REGISTRY_WSJCPP_EMPLOY(EmployConfig)
 
 EmployConfig::EmployConfig()
 : WsjcppEmployBase({EmployConfig::name()}, {}) {
@@ -52,7 +52,7 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
   m_sConfigDir = sConfigDir;
   m_sHtmlFolder = "";
   std::string sConfigFile = sConfigDir + "/config.yml";
-  if (!WsjcppCore::fileExists(sConfigFile)) {
+  if (!wsjcpp::file_exists(sConfigFile)) {
     WsjcppLog::throw_err(TAG, "File not found " + sConfigFile);
   }
 
@@ -66,9 +66,9 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
     WsjcppLog::throw_err(TAG, "Missing option html-folder in " + sConfigFile);
   }
   if (sHtmlFolder != "/") {
-    sHtmlFolder = WsjcppCore::doNormalizePath(m_sConfigDir + "/" + sHtmlFolder);
+    sHtmlFolder = wsjcpp::normalize_filepath(m_sConfigDir + "/" + sHtmlFolder);
   }
-  if (!WsjcppCore::dirExists(sHtmlFolder)) {
+  if (!wsjcpp::dir_exists(sHtmlFolder)) {
     WsjcppLog::throw_err(TAG, "Folder not found " + sConfigFile);
   }
   m_sHtmlFolder = sHtmlFolder;
@@ -79,7 +79,7 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
   // repositories
   if (yaml["repositories"].isValue()) {
     std::string repos_dir = m_sConfigDir + "/repositories";
-    if (!WsjcppCore::dirExists(repos_dir)) {
+    if (!wsjcpp::dir_exists(repos_dir)) {
       WsjcppCore::makeDirsPath(repos_dir);
     }
     std::vector<std::string> repositories = yaml["repositories"].keys();
@@ -93,7 +93,7 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
       }
       repo.set_repo_folder(repos_dir + "/" + key);
       std::string git_repo = cur["url"];
-      if (!WsjcppCore::dirExists(repo.repo_folder())) {
+      if (!wsjcpp::dir_exists(repo.repo_folder())) {
         std::string command = "git clone " + repo.url() + " " + repo.repo_folder();
         system(command.c_str());
       }
@@ -103,7 +103,7 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
 
   // web-sites
   std::string web_sites_dir = m_sConfigDir + "/web-sites";
-  if (!WsjcppCore::dirExists(web_sites_dir)) {
+  if (!wsjcpp::dir_exists(web_sites_dir)) {
     WsjcppCore::makeDirsPath(web_sites_dir);
   }
   std::vector<std::string> web_sites = yaml["web-sites"].keys();
@@ -112,7 +112,7 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
     WsjcppYamlCursor cur = yaml["web-sites"][key];
     std::string web_site_folder = web_sites_dir + "/" + key;
     std::string git_repo = cur["git-repository"];
-    if (!WsjcppCore::dirExists(web_site_folder)) {
+    if (!wsjcpp::dir_exists(web_site_folder)) {
       std::string command = "git clone " + git_repo + " " + web_site_folder;
       system(command.c_str());
     }

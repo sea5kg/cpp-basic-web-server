@@ -103,7 +103,7 @@ int main(int argc, const char* argv[]) {
     std::string appVersion = std::string(WSJCPP_APP_VERSION);
 
     // previous logs in current directory
-    if (!WsjcppCore::dirExists(".logs")) {
+    if (!wsjcpp::dir_exists(".logs")) {
         WsjcppCore::makeDir(".logs");
     }
     WsjcppLog::setPrefixLogFile("cpp_web_server");
@@ -115,7 +115,7 @@ int main(int argc, const char* argv[]) {
         "/root/data/"
     };
     WsjcppEmployeesInit employees({}, false);
-    if (!employees.inited) {
+    if (!employees.initialized) {
         return -1;
     }
 
@@ -126,8 +126,8 @@ int main(int argc, const char* argv[]) {
         if (sWorkDir[0] != '/') {
             sWorkDir = WsjcppCore::getCurrentDirectory() + "/" + sWorkDir;
         }
-        sWorkDir = WsjcppCore::doNormalizePath(sWorkDir);
-        if (WsjcppCore::fileExists(sWorkDir + "/config.yml")) {
+        sWorkDir = wsjcpp::normalize_filepath(sWorkDir);
+        if (wsjcpp::file_exists(sWorkDir + "/config.yml")) {
             std::cout << "Automatically detected workdir: " << sWorkDir << std::endl;
             pConfig->setDataDir(sWorkDir);
             try_apply_mldl_user(sWorkDir);
