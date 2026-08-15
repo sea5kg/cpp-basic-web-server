@@ -18,7 +18,7 @@ repositories:
 
 mapping-html-folders:
   "sea5kg.ru": "${repo-sea5kg-ru}/html"
-  "localhost/sea5kg.ru": "${repo-sea5kg-ru}/html"
+  "localhost/sea5kg_ru": "${repo-sea5kg-ru}/html"
   "sea5kg.ru/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
   "localhost/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
   "wsjcpp.org": "${repo-wsjcpp-org}/web"

@@ -27,6 +27,7 @@
 
 #include <wsjcpp_employees.h>
 #include "employ_config.h"
+#include "mldl/objects/mldl_repository.h"
 
 class EmployConfig : public WsjcppEmployBase { //, public IMyImpl, public IMyImpl2 {
 public:
@@ -41,7 +42,7 @@ public:
   int getPort() const;
 
   std::map<std::string, std::string> web_sites() const;
-  std::map<std::string, std::string> repositories() const;
+  std::map<std::string, mldl::repository> repositories() const;
 
   // // IMyImpl
   // virtual void doSomething() override;
@@ -55,5 +56,5 @@ private:
   std::string m_sHtmlFolder;
   int m_nPort;
   std::map<std::string, std::string> m_web_sites;
-  std::map<std::string, std::string> m_repositories;
+  std::map<std::string, mldl::repository> m_repositories;
 };

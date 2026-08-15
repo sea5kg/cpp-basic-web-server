@@ -77,22 +77,28 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
   m_nPort = yaml["port"].valInt();
 
   // repositories
-  std::string repos_dir = m_sConfigDir + "/repositories";
-  if (!WsjcppCore::dirExists(repos_dir)) {
-    WsjcppCore::makeDirsPath(repos_dir);
-  }
-  std::vector<std::string> repositories = yaml["repositories"].keys();
-  for (int i = 0; i < repositories.size(); i++) {
-    std::string key = repositories[i];
-    WsjcppYamlCursor cur = yaml["repositories"][key];
-
-    std::string repos_folder = repos_dir + "/" + key;
-    std::string git_repo = cur["url"];
-    if (!WsjcppCore::dirExists(repos_folder)) {
-      std::string command = "git clone " + git_repo + " " + repos_folder;
-      system(command.c_str());
+  if (yaml["repositories"].isValue()) {
+    std::string repos_dir = m_sConfigDir + "/repositories";
+    if (!WsjcppCore::dirExists(repos_dir)) {
+      WsjcppCore::makeDirsPath(repos_dir);
     }
-    m_web_sites[key] = repos_folder;
+    std::vector<std::string> repositories = yaml["repositories"].keys();
+    for (int i = 0; i < repositories.size(); i++) {
+      mldl::repository repo;
+      std::string key = repositories[i];
+      WsjcppYamlCursor cur = yaml["repositories"][key];
+      if (!repo.read_from_yaml(key, cur)) {
+        WsjcppLog::info(TAG, "Skip repository: " + key);
+        continue;
+      }
+      repo.set_repo_folder(repos_dir + "/" + key);
+      std::string git_repo = cur["url"];
+      if (!WsjcppCore::dirExists(repo.repo_folder())) {
+        std::string command = "git clone " + repo.url() + " " + repo.repo_folder();
+        system(command.c_str());
+      }
+      m_repositories[key] = repo;
+    }
   }
 
   // web-sites
@@ -126,7 +132,7 @@ std::map<std::string, std::string> EmployConfig::web_sites() const {
   return m_web_sites;
 }
 
-std::map<std::string, std::string> EmployConfig::repositories() const {
+std::map<std::string, mldl::repository> EmployConfig::repositories() const {
   return m_repositories;
 }
 

@@ -35,6 +35,27 @@ namespace mldl {
 
 repository::repository() {};
 
+bool repository::read_from_yaml(const std::string &key, WsjcppYamlCursor &cur) {
+  m_key = key;
+  if (!cur["url"].isValue()) {
+    return false;
+  }
+  m_url = cur["url"].valStr();
+  return true;
+}
+
+const std::string &repository::key() const {
+  return m_key;
+}
+
+void repository::set_repo_folder(const std::string &val) {
+  m_repo_folder = val;
+}
+
+const std::string &repository::repo_folder() const {
+  return m_repo_folder;
+}
+
 const std::string &repository::url() const {
   return m_url;
 }
