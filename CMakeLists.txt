@@ -42,11 +42,9 @@ set(EXECUTABLE_OUTPUT_PATH ${my-little-dev-lab_SOURCE_DIR})
 
 # include header dirs
 list (APPEND WSJCPP_INCLUDE_DIRS "src")
-list (APPEND WSJCPP_INCLUDE_DIRS "src/employees")
-list (APPEND WSJCPP_INCLUDE_DIRS "src/api_handlers")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/third_party/sqlite3/src")
 
-list (APPEND WSJCPP_SOURCES "./src/employees/employ_config.cpp")
+list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_config.cpp")
 list (APPEND WSJCPP_SOURCES "src/web_server.cpp")
 list (APPEND WSJCPP_SOURCES "src/mldl/objects/mldl_repository.cpp")
 list (APPEND WSJCPP_SOURCES "src/main.cpp")
