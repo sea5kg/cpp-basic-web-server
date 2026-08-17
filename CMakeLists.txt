@@ -45,9 +45,11 @@ list (APPEND WSJCPP_INCLUDE_DIRS "src")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/third_party/sqlite3/src")
 
 list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_config.cpp")
-list (APPEND WSJCPP_SOURCES "src/web_server.cpp")
-list (APPEND WSJCPP_SOURCES "src/mldl/objects/mldl_repository.cpp")
-list (APPEND WSJCPP_SOURCES "src/main.cpp")
+list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_webhooks.cpp")
+list (APPEND WSJCPP_SOURCES "./src/web_server.cpp")
+list (APPEND WSJCPP_SOURCES "./src/mldl/objects/mldl_repository.cpp")
+list (APPEND WSJCPP_SOURCES "./src/mldl/objects/mldl_webhook.cpp")
+list (APPEND WSJCPP_SOURCES "./src/main.cpp")
 
 # # CURL
 FIND_PACKAGE(CURL)

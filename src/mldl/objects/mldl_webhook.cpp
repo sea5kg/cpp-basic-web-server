@@ -23,28 +23,18 @@
  * SOFTWARE.
  ***********************************************************************************/
 
-#pragma once
+#include "mldl_webhook.h"
 
-#include <string>
-#include <json.hpp>
-#include "HttpService.h"
-#include "mldl/employees/employ_config.h"
+namespace mldl {
 
-class WebServer {
-public:
-  WebServer();
-  hv::HttpService *getService();
-  int httpHandleRequests(HttpRequest* req, HttpResponse* resp);
-  int httpApi(HttpRequest* req, HttpResponse* resp);
-  int httpWebhook(HttpRequest* req, HttpResponse* resp, const std::string &request_path);
+webhook::webhook(const std::string &id) : m_id(id) {};
 
-private:
-  std::string TAG;
-  hv::HttpService *m_pHttpService;
+const std::string &webhook::id() const {
+  return m_id;
+}
 
-  EmployConfig *m_pConfig;
+bool webhook::call() {
+  return false;
+}
 
-  std::string m_sIndexHtml;
-  std::string m_sHtmlFolder;
-  std::map<std::string, std::string> m_web_sites;
-};
+} // namespace mldl

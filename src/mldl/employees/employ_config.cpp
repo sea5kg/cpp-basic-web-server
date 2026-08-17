@@ -24,13 +24,13 @@
  ***********************************************************************************/
 
 #include "employ_config.h"
+#include "mldl/include/webhooks.h"
 #include <wsjcpp_core.h>
 #include <wsjcpp_yaml.h>
 
 REGISTRY_WSJCPP_EMPLOY(EmployConfig)
 
-EmployConfig::EmployConfig()
-: WsjcppEmployBase({EmployConfig::name()}, {}) {
+EmployConfig::EmployConfig() : WsjcppEmployBase({EmployConfig::name()}, {mldl::webhooks::name()}) {
   TAG = "EmployConfig";
 }
 
@@ -49,6 +49,7 @@ bool EmployConfig::deinit(const std::string &sName, bool bSilent) {
 }
 
 void EmployConfig::setDataDir(const std::string sConfigDir) {
+  WsjcppLog::info(TAG, "setDataDir: " + sConfigDir);
   m_sConfigDir = sConfigDir;
   m_sHtmlFolder = "";
   std::string sConfigFile = sConfigDir + "/config.yml";
@@ -77,27 +78,32 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
   m_nPort = yaml["port"].valInt();
 
   // repositories
-  if (yaml["repositories"].isValue()) {
+  if (yaml["repositories"].isMap()) {
     std::string repos_dir = m_sConfigDir + "/repositories";
     if (!wsjcpp::dir_exists(repos_dir)) {
       WsjcppCore::makeDirsPath(repos_dir);
     }
     std::vector<std::string> repositories = yaml["repositories"].keys();
     for (int i = 0; i < repositories.size(); i++) {
-      mldl::repository repo;
+      std::shared_ptr<mldl::repository> repo = std::make_shared<mldl::repository>();
       std::string key = repositories[i];
+      WsjcppLog::info(TAG, "Registered repository key: " + key);
       WsjcppYamlCursor cur = yaml["repositories"][key];
-      if (!repo.read_from_yaml(key, cur)) {
+      if (!repo->read_from_yaml(key, cur)) {
         WsjcppLog::info(TAG, "Skip repository: " + key);
         continue;
       }
-      repo.set_repo_folder(repos_dir + "/" + key);
+      repo->set_repo_folder(repos_dir + "/" + key);
       std::string git_repo = cur["url"];
-      if (!wsjcpp::dir_exists(repo.repo_folder())) {
-        std::string command = "git clone " + repo.url() + " " + repo.repo_folder();
+      WsjcppLog::info(TAG, "Registered repository: " + git_repo);
+      if (!wsjcpp::dir_exists(repo->repo_folder())) {
+        std::string command = "git clone " + repo->url() + " " + repo->repo_folder();
         system(command.c_str());
       }
       m_repositories[key] = repo;
+
+      findWsjcppEmploy<mldl::webhooks>()->registry_webhook(std::make_shared<mldl::webhook>(repo->webhook_update()));
+      m_webhooks[repo->webhook_update()] = repo;
     }
   }
 
@@ -132,8 +138,12 @@ std::map<std::string, std::string> EmployConfig::web_sites() const {
   return m_web_sites;
 }
 
-std::map<std::string, mldl::repository> EmployConfig::repositories() const {
+std::map<std::string, std::shared_ptr<mldl::repository>> EmployConfig::repositories() const {
   return m_repositories;
+}
+
+std::map<std::string, std::shared_ptr<mldl::repository>> EmployConfig::webhooks() const {
+  return m_webhooks;
 }
 
 // void EmployMyImpl::doSomething() {

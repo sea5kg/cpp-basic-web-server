@@ -25,14 +25,17 @@
 
 #pragma once
 
-#include <wsjcpp_employees.h>
 #include "employ_config.h"
 #include "mldl/objects/mldl_repository.h"
+#include <memory>
+#include <wsjcpp_employees.h>
 
 class EmployConfig : public WsjcppEmployBase { //, public IMyImpl, public IMyImpl2 {
 public:
   EmployConfig();
-  static std::string name() { return "EmployConfig"; }
+  static std::string name() {
+    return "EmployConfig";
+  }
 
   virtual bool init(const std::string &sName, bool bSilent) override;
   virtual bool deinit(const std::string &sName, bool bSilent) override;
@@ -42,7 +45,8 @@ public:
   int getPort() const;
 
   std::map<std::string, std::string> web_sites() const;
-  std::map<std::string, mldl::repository> repositories() const;
+  std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const;
+  std::map<std::string, std::shared_ptr<mldl::repository>> webhooks() const;
 
   // // IMyImpl
   // virtual void doSomething() override;
@@ -56,5 +60,6 @@ private:
   std::string m_sHtmlFolder;
   int m_nPort;
   std::map<std::string, std::string> m_web_sites;
-  std::map<std::string, mldl::repository> m_repositories;
+  std::map<std::string, std::shared_ptr<mldl::repository>> m_repositories;
+  std::map<std::string, std::shared_ptr<mldl::repository>> m_webhooks;
 };

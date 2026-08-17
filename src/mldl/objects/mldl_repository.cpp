@@ -41,6 +41,10 @@ bool repository::read_from_yaml(const std::string &key, WsjcppYamlCursor &cur) {
     return false;
   }
   m_url = cur["url"].valStr();
+  // optional
+  if (cur.hasKey("webhook-update")) {
+    m_webhook_update = cur["webhook-update"].valStr();
+  }
   return true;
 }
 
@@ -58,6 +62,10 @@ const std::string &repository::repo_folder() const {
 
 const std::string &repository::url() const {
   return m_url;
+}
+
+const std::string &repository::webhook_update() const {
+  return m_webhook_update;
 }
 
 } // namespace mldl

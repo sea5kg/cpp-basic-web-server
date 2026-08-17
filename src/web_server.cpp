@@ -85,40 +85,45 @@ int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
   }
 
   std::string sOriginalRequestPath = req->path;
-  std::string sRequestPath;
+  std::string request_path;
 
   // remove get params from path
   std::size_t nFoundGetParams = sOriginalRequestPath.rfind("?");
   if (nFoundGetParams != std::string::npos) {
-    sRequestPath = sOriginalRequestPath.substr(0, nFoundGetParams);
+    request_path = sOriginalRequestPath.substr(0, nFoundGetParams);
   } else {
-    sRequestPath = sOriginalRequestPath;
+    request_path = sOriginalRequestPath;
   }
-  sRequestPath = wsjcpp::normalize_filepath(sRequestPath);
+  request_path = wsjcpp::normalize_filepath(request_path);
 
-  // WsjcppLog::info(TAG, "sRequestPath = " + sRequestPath);
-  if (sRequestPath == "/api" || sRequestPath == "/api/") {
+  if (wsjcpp::starts_with(request_path, "/webhook/")) {
+    std::cout << "CALLED WebHook" << std::endl;
+    return this->httpWebhook(req, resp, request_path);
+  }
+
+  // WsjcppLog::info(TAG, "request_path = " + request_path);
+  if (wsjcpp::starts_with(request_path, "/api/")) {
     std::cout << "CALLED API" << std::endl;
     return this->httpApi(req, resp);
   }
 
-  if (sRequestPath == "/") {
-    sRequestPath = "/index.html";
+  if (request_path == "/") {
+    request_path = "/index.html";
   }
 
-  if (sRequestPath == "/admin" || sRequestPath == "/admin/") {
-    sRequestPath = "/index.html";
+  if (request_path == "/admin" || request_path == "/admin/") {
+    request_path = "/index.html";
   }
 
   // TODO
-  WsjcppLog::info(TAG, "Request path: " + sRequestPath);
-  std::string sFilePath = sRequestPath = wsjcpp::normalize_filepath(html_folder + "/" + sRequestPath);
+  WsjcppLog::info(TAG, "Request path: " + request_path);
+  std::string sFilePath = wsjcpp::normalize_filepath(html_folder + "/" + request_path);
   if (wsjcpp::file_exists(sFilePath)) { // TODO check the file exists not dir
     return resp->File(sFilePath.c_str());
   }
   // cache
-  WsjcppLog::info(TAG, "File from cache: " + sRequestPath);
-  std::string sResPath = "./data/html" + sRequestPath;
+  WsjcppLog::info(TAG, "File from cache: " + request_path);
+  std::string sResPath = "./data/html" + request_path;
   if (WsjcppResourcesManager::has(sResPath)) {
     WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
     resp->Data(
@@ -203,6 +208,32 @@ int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
   // );
   resp->content_type = TEXT_PLAIN;
   // resp->SetContentTypeByFilename("scoreboard.json");
+  return 200;
+}
+
+int WebServer::httpWebhook(HttpRequest* req, HttpResponse* resp, const std::string &request_path) {
+  auto now = std::chrono::system_clock::now().time_since_epoch();
+  int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
+  std::cout << "request_path: " << request_path << std::endl;
+
+  if (req->method != HTTP_POST && req->method != HTTP_GET) {
+    std::cout << "Expected POST or GET" << std::endl;
+    return 403;
+  }
+  static const std::string webhook_prefix = "/webhook/";
+  if (!wsjcpp::starts_with(request_path, webhook_prefix)) {
+    std::cout << "wrong prefix" << std::endl;
+    return 403;
+  }
+  std::string webhook_id = request_path.substr(webhook_prefix.size(), 100);
+  std::cout << "substr: " << webhook_id << std::endl;
+  std::map<std::string, std::shared_ptr<mldl::repository>> hooks = m_pConfig->webhooks();
+  if (!hooks.count(webhook_id)) {
+    std::cout << "Not found webhook: " << webhook_id << std::endl;
+    return 404;
+  }
+  std::cout << "repo_folder: " << hooks[webhook_id]->repo_folder() << std::endl;
+
   return 200;
 }
 

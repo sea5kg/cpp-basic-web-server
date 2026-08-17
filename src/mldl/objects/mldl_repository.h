@@ -38,6 +38,7 @@ public:
   void set_repo_folder(const std::string &);
   const std::string &repo_folder() const;
   const std::string &url() const;
+  const std::string &webhook_update() const;
 
 private:
   std::string m_key;

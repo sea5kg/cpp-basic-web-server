@@ -26,25 +26,19 @@
 #pragma once
 
 #include <string>
-#include <json.hpp>
-#include "HttpService.h"
-#include "mldl/employees/employ_config.h"
+#include <memory>
+#include "../objects/mldl_webhook.h"
 
-class WebServer {
+namespace mldl {
+
+class webhooks {
 public:
-  WebServer();
-  hv::HttpService *getService();
-  int httpHandleRequests(HttpRequest* req, HttpResponse* resp);
-  int httpApi(HttpRequest* req, HttpResponse* resp);
-  int httpWebhook(HttpRequest* req, HttpResponse* resp, const std::string &request_path);
-
-private:
-  std::string TAG;
-  hv::HttpService *m_pHttpService;
-
-  EmployConfig *m_pConfig;
-
-  std::string m_sIndexHtml;
-  std::string m_sHtmlFolder;
-  std::map<std::string, std::string> m_web_sites;
+  static std::string name() {
+    return "employ_webhooks";
+  }
+  virtual bool registry_webhook(std::shared_ptr<mldl::webhook> webhook) = 0;
+  virtual bool contains(const std::string &webhook_id) const = 0;
+  virtual bool call(const std::string &webhook_id) = 0;
 };
+
+} // namespace mldl
