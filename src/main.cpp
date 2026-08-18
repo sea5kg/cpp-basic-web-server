@@ -26,6 +26,7 @@
 #include "WebSocketServer.h" // libhv
 #include "mldl/include/config.h"
 #include "web_server.h"
+#include <sea5kg_logger.h>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
 
@@ -103,38 +104,50 @@ int main(int argc, const char *argv[]) {
   std::string TAG = "MAIN";
   std::string appName = std::string(WSJCPP_APP_NAME);
   std::string appVersion = std::string(WSJCPP_APP_VERSION);
+  WsjcppLog::setEnableLogFile(false);
 
-  // previous logs in current directory
-  if (!wsjcpp::dir_exists(".logs")) {
-    WsjcppCore::makeDir(".logs");
-  }
-  WsjcppLog::setPrefixLogFile("cpp_web_server");
-  WsjcppLog::setLogDirectory(".logs");
+  std::cout << "" << std::endl;
+  std::cout << "       ▜ ▘▗ ▗ ▜      ▌      ▜   ▌ " << std::endl;
+  std::cout << "▛▛▌▌▌  ▐ ▌▜▘▜▘▐ █▌  ▛▌█▌▌▌  ▐ ▀▌▛▌" << std::endl;
+  std::cout << "▌▌▌▙▌  ▐▖▌▐▖▐▖▐▖▙▖  ▙▌▙▖▚▘  ▐▖█▌▙▌" << std::endl;
+  std::cout << "   ▄▌                             " << std::endl;
+  std::cout << "" << std::endl;
 
   // try find config.yml
   const std::vector<std::string> vPossibleFolders = {"./data", "/root/data/"};
+  std::string data_dir = "";
+  for (int i = 0; i < vPossibleFolders.size(); i++) {
+    data_dir = vPossibleFolders[i];
+    if (data_dir[0] != '/') {
+      data_dir = WsjcppCore::getCurrentDirectory() + "/" + data_dir;
+    }
+    data_dir = wsjcpp::normalize_filepath(data_dir);
+    if (wsjcpp::file_exists(data_dir + "/config.yml")) {
+      std::cout << "Automatically detected data-dir: " << data_dir << std::endl;
+      try_apply_mldl_user(data_dir);
+      break;
+    }
+  }
+
+  if (data_dir == "") {
+    sea5kg::log::critical(TAG, "Not found data-dir");
+  }
+
+  std::string log_dir = data_dir + "/logs/%Y/%m/%d/";
+  log_dir = wsjcpp::normalize_filepath(log_dir);
+  sea5kg::log::set_log_level_file_output(sea5kg::log_level::DEBUG);
+  sea5kg::log::set_log_dirpath(log_dir);
+  sea5kg::log::set_log_filename_prefix("mldl_");
+
   WsjcppEmployeesInit employees({}, false);
   if (!employees.initialized) {
     return -1;
   }
 
   auto *pConfig = findWsjcppEmploy<mldl::config>();
+  pConfig->set_data_dir(data_dir);
 
-  for (int i = 0; i < vPossibleFolders.size(); i++) {
-    std::string sWorkDir = vPossibleFolders[i];
-    if (sWorkDir[0] != '/') {
-      sWorkDir = WsjcppCore::getCurrentDirectory() + "/" + sWorkDir;
-    }
-    sWorkDir = wsjcpp::normalize_filepath(sWorkDir);
-    if (wsjcpp::file_exists(sWorkDir + "/config.yml")) {
-      std::cout << "Automatically detected workdir: " << sWorkDir << std::endl;
-      pConfig->set_data_dir(sWorkDir);
-      try_apply_mldl_user(sWorkDir);
-      break;
-    }
-  }
-
-  WsjcppLog::ok(TAG, "Starting scoreboard on http://localhost:" + std::to_string(pConfig->web_port()) + "/");
+  sea5kg::log::success(TAG, "Starting scoreboard on http://localhost:" + std::to_string(pConfig->web_port()) + "/");
 
   WebServer httpServer;
   hv::HttpService *pRouter = httpServer.getService();

@@ -25,6 +25,7 @@
 
 #include "mldl/include/config.h"
 #include "mldl/include/webhooks.h"
+#include <sea5kg_logger.h>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
 #include <wsjcpp_yaml.h>
@@ -33,7 +34,7 @@ class EmployConfig : public WsjcppEmployBase, public mldl::config {
 public:
   EmployConfig();
   static std::string name() {
-    return "EmployConfig";
+    return "CONFIG";
   }
 
   virtual bool init(const std::string &sName, bool bSilent) override;
@@ -41,6 +42,7 @@ public:
 
   // mldl::config
   virtual void set_data_dir(const std::string sConfigDir) override;
+  virtual const std::string &data_dir() override;
   virtual const std::string &html_folder() const override;
   virtual int web_port() const override;
   virtual std::map<std::string, std::string> web_sites() const override;
@@ -65,44 +67,44 @@ EmployConfig::EmployConfig() : WsjcppEmployBase({mldl::config::name()}, {mldl::w
 
 bool EmployConfig::init(const std::string &sName, bool bSilent) {
   if (!bSilent) {
-    WsjcppLog::info(TAG, "init");
+    sea5kg::log::info(TAG, "init");
   }
   return true;
 }
 
 bool EmployConfig::deinit(const std::string &sName, bool bSilent) {
   if (!bSilent) {
-    WsjcppLog::info(TAG, "deinit");
+    sea5kg::log::info(TAG, "deinit");
   }
   return true;
 }
 
-void EmployConfig::set_data_dir(const std::string sConfigDir) {
-  WsjcppLog::info(TAG, "setDataDir: " + sConfigDir);
-  m_sConfigDir = sConfigDir;
+void EmployConfig::set_data_dir(const std::string data_dir) {
+  sea5kg::log::info(TAG, "setDataDir: " + data_dir);
+  m_sConfigDir = data_dir;
   m_sHtmlFolder = "";
-  std::string sConfigFile = sConfigDir + "/config.yml";
+  std::string sConfigFile = data_dir + "/config.yml";
   if (!wsjcpp::file_exists(sConfigFile)) {
-    WsjcppLog::throw_err(TAG, "File not found " + sConfigFile);
+    sea5kg::log::critical(TAG, "File not found " + sConfigFile);
   }
 
   WsjcppYaml yaml;
   std::string sError;
   if (!yaml.loadFromFile(sConfigFile, sError)) {
-    WsjcppLog::throw_err(TAG, "Failed parsing yaml: " + sError);
+    sea5kg::log::critical(TAG, "Failed parsing yaml: " + sError);
   }
   std::string sHtmlFolder = yaml["html-folder"].valStr();
   if (sHtmlFolder == "") {
-    WsjcppLog::throw_err(TAG, "Missing option html-folder in " + sConfigFile);
+    sea5kg::log::critical(TAG, "Missing option html-folder in " + sConfigFile);
   }
   if (sHtmlFolder != "/") {
     sHtmlFolder = wsjcpp::normalize_filepath(m_sConfigDir + "/" + sHtmlFolder);
   }
   if (!wsjcpp::dir_exists(sHtmlFolder)) {
-    WsjcppLog::throw_err(TAG, "Folder not found " + sConfigFile);
+    sea5kg::log::critical(TAG, "Folder not found " + sConfigFile);
   }
   m_sHtmlFolder = sHtmlFolder;
-  WsjcppLog::info(TAG, "Html Folder: " + m_sHtmlFolder);
+  sea5kg::log::info(TAG, "Html Folder: " + m_sHtmlFolder);
 
   m_nPort = yaml["port"].valInt();
 
@@ -116,15 +118,15 @@ void EmployConfig::set_data_dir(const std::string sConfigDir) {
     for (int i = 0; i < repositories.size(); i++) {
       std::shared_ptr<mldl::repository> repo = std::make_shared<mldl::repository>();
       std::string key = repositories[i];
-      WsjcppLog::info(TAG, "Registered repository key: " + key);
+      sea5kg::log::info(TAG, "Registered repository key: " + key);
       WsjcppYamlCursor cur = yaml["repositories"][key];
       if (!repo->read_from_yaml(key, cur)) {
-        WsjcppLog::info(TAG, "Skip repository: " + key);
+        sea5kg::log::info(TAG, "Skip repository: " + key);
         continue;
       }
       repo->set_repo_folder(repos_dir + "/" + key);
       std::string git_repo = cur["url"];
-      WsjcppLog::info(TAG, "Registered repository: " + git_repo);
+      sea5kg::log::info(TAG, "Registered repository: " + git_repo);
       if (!wsjcpp::dir_exists(repo->repo_folder())) {
         std::string command = "git clone " + repo->url() + " " + repo->repo_folder();
         system(command.c_str());
@@ -155,6 +157,10 @@ void EmployConfig::set_data_dir(const std::string sConfigDir) {
   }
 }
 
+const std::string &EmployConfig::data_dir() {
+  return m_sConfigDir;
+}
+
 const std::string &EmployConfig::html_folder() const {
   return m_sHtmlFolder;
 }
@@ -174,11 +180,3 @@ std::map<std::string, std::shared_ptr<mldl::repository>> EmployConfig::repositor
 std::map<std::string, std::shared_ptr<mldl::repository>> EmployConfig::webhooks() const {
   return m_webhooks;
 }
-
-// void EmployMyImpl::doSomething() {
-//     WsjcppLog::info(TAG, "doSomething");
-// }
-
-// void EmployMyImpl::doSomething2() {
-//     WsjcppLog::info(TAG, "doSomething2");
-// }

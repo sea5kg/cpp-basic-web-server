@@ -26,6 +26,7 @@
 #include "mldl/include/webhooks.h"
 #include <memory>
 #include <mutex>
+#include <sea5kg_logger.h>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
 #include <wsjcpp_yaml.h>
@@ -52,19 +53,19 @@ private:
 REGISTRY_WSJCPP_EMPLOY(employ_webhooks)
 
 employ_webhooks::employ_webhooks() : WsjcppEmployBase({employ_webhooks::name()}, {}) {
-  TAG = "employ_webhooks";
+  TAG = "WEBHOOKS";
 }
 
 bool employ_webhooks::init(const std::string &sName, bool bSilent) {
   if (!bSilent) {
-    WsjcppLog::info(TAG, "init");
+    sea5kg::log::info(TAG, "init");
   }
   return true;
 }
 
 bool employ_webhooks::deinit(const std::string &sName, bool bSilent) {
   if (!bSilent) {
-    WsjcppLog::info(TAG, "deinit");
+    sea5kg::log::info(TAG, "deinit");
   }
   return true;
 }

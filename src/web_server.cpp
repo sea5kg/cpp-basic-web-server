@@ -27,25 +27,73 @@
 
 // #include "WebSocketServer.h"
 #include "EventLoop.h"
-#include "htime.h"
-#include "hssl.h"
 #include "hlog.h"
+#include "hssl.h"
+#include "htime.h"
 #include <regex>
+#include <sea5kg_logger.h>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
 // #include <wsjcpp_jsonrpc20.h>
 
-
 using namespace hv;
 
+static std::shared_ptr<sea5kg::logger> g_http_logger = std::shared_ptr<sea5kg::logger>(sea5kg::logger::create());
+
+void EmployWebServer_custom_logger(int level, const char *msg, int len) {
+  static const std::string TAG = "http-hv";
+  std::string message(msg, len - 1); // remove last '\n' character
+  switch (level) {
+  case LOG_LEVEL_DEBUG:
+    g_http_logger->debug(TAG, message);
+    break;
+  case LOG_LEVEL_INFO:
+    g_http_logger->info(TAG, message);
+    break;
+  case LOG_LEVEL_WARN:
+    sea5kg::log::warning(TAG, message);
+    g_http_logger->warning(TAG, message);
+    break;
+  case LOG_LEVEL_ERROR:
+    sea5kg::log::error(TAG, message);
+    g_http_logger->error(TAG, message);
+    break;
+  case LOG_LEVEL_FATAL:
+    sea5kg::log::error(TAG, message);
+    g_http_logger->critical(TAG, message);
+    break;
+  default:
+    sea5kg::log::error(TAG, "Unknow level: " + message);
+    g_http_logger->error(TAG, message);
+  }
+}
 
 WebServer::WebServer() {
-  TAG = "WebServer";
+  TAG = "WEB";
   m_pConfig = findWsjcppEmploy<mldl::config>();
   // m_pEmployFlags = findWsjcppEmploy<EmployFlags>();
   // m_pEmployDatabase = findWsjcppEmploy<EmployDatabase>();
   // m_pTeamLogos = findWsjcppEmploy<EmployTeamLogos>();
   m_sHtmlFolder = m_pConfig->html_folder();
+
+  // logger
+  g_http_logger->set_log_filename_prefix("http_hv_");
+  g_http_logger->set_log_dirpath(sea5kg::log::log_dirpath());
+  g_http_logger->set_rotation_period_in_seconds(sea5kg::log::rotation_period_in_seconds());
+  g_http_logger->set_log_level_file_output(sea5kg::log_level::DEBUG);
+  g_http_logger->set_log_level_console_output(sea5kg::log_level::DEBUG);
+
+  // std::string starting_message = "Starting web on http://localhost:" + std::to_string(bna_server::WEB_TCP_PORT) + "/";
+  g_http_logger->success(TAG, "init");
+
+  {
+    logger_t *pLogger = hv_default_logger();
+    logger_set_handler(pLogger, EmployWebServer_custom_logger);
+    logger_set_format(pLogger, "%s"); // removing time and log level
+
+    // Test the log
+    hlogi("This is an info message.");
+  }
 
   // {
   //     logger_t* pLogger = hv_default_logger();
@@ -65,8 +113,10 @@ WebServer::WebServer() {
   // static files
   m_pHttpService->document_root = "./html";
 
-  m_pHttpService->GET("*", std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
-  m_pHttpService->POST("*", std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
+  m_pHttpService->GET("*",
+                      std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
+  m_pHttpService->POST("*",
+                       std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 hv::HttpService *WebServer::getService() {
@@ -77,12 +127,12 @@ hv::HttpService *WebServer::getService() {
 //   return resp->Json(m_pHttpService->Paths());
 // }
 
-int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
+int WebServer::httpHandleRequests(HttpRequest *req, HttpResponse *resp) {
   std::string host = req->host;
   std::string html_folder = m_sHtmlFolder;
   if (m_web_sites.count(host) > 0) {
     html_folder = m_web_sites[host];
-    std::cout << req->host << " -> " << html_folder  << std::endl;
+    std::cout << req->host << " -> " << html_folder << std::endl;
   }
 
   std::string sOriginalRequestPath = req->path;
@@ -102,7 +152,7 @@ int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
     return this->httpWebhook(req, resp, request_path);
   }
 
-  // WsjcppLog::info(TAG, "request_path = " + request_path);
+  // sea5kg::log::info(TAG, "request_path = " + request_path);
   if (wsjcpp::starts_with(request_path, "/api/")) {
     std::cout << "CALLED API" << std::endl;
     return this->httpApi(req, resp);
@@ -117,20 +167,18 @@ int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
   }
 
   // TODO
-  WsjcppLog::info(TAG, "Request path: " + request_path);
+  sea5kg::log::info(TAG, "Request path: " + request_path);
   std::string sFilePath = wsjcpp::normalize_filepath(html_folder + "/" + request_path);
   if (wsjcpp::file_exists(sFilePath)) { // TODO check the file exists not dir
     return resp->File(sFilePath.c_str());
   }
   // cache
-  WsjcppLog::info(TAG, "File from cache: " + request_path);
+  sea5kg::log::info(TAG, "File from cache: " + request_path);
   std::string sResPath = "./data/html" + request_path;
   if (WsjcppResourcesManager::has(sResPath)) {
     WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
-    resp->Data(
-      (void *)pFile->getBuffer(),
-      pFile->getBufferSize(),
-      true // nocopy
+    resp->Data((void *)pFile->getBuffer(), pFile->getBufferSize(),
+               true // nocopy
     );
     resp->SetContentTypeByFilename(sResPath.c_str());
     return 200;
@@ -138,7 +186,7 @@ int WebServer::httpHandleRequests(HttpRequest* req, HttpResponse* resp) {
   return 404; // Not found
 }
 
-int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
+int WebServer::httpApi(HttpRequest *req, HttpResponse *resp) {
   auto now = std::chrono::system_clock::now().time_since_epoch();
   int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
 
@@ -149,7 +197,7 @@ int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
   nlohmann::json req_json_body;
   try {
     req_json_body = nlohmann::json::parse(req->body);
-  } catch (nlohmann::json::parse_error& error){
+  } catch (nlohmann::json::parse_error &error) {
     std::cerr << "Parse error at byte: " << error.byte << std::endl;
     return 400;
   }
@@ -200,9 +248,8 @@ int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
   // int nPoints = m_pConfig->scoreboard()->incrementAttackScore(flag, sTeamId);
   // std::string sPoints = std::to_string(double(nPoints) / 10.0);
 
-  // std::string sResponse = "Accepted: Recieved flag {" + sFlag + "} from {" + sTeamId + "} (Accepted + " + sPoints + ")";
-  // WsjcppLog::ok(TAG, sResponse + sRequestIP_MsgSuffex);
-  // resp->Data(
+  // std::string sResponse = "Accepted: Recieved flag {" + sFlag + "} from {" + sTeamId + "} (Accepted + " + sPoints +
+  // ")"; sea5kg::log::ok(TAG, sResponse + sRequestIP_MsgSuffex); resp->Data(
   //     (void *)(sResponse.c_str()),
   //     sResponse.size(),
   //     false // copy buffer
@@ -212,7 +259,7 @@ int WebServer::httpApi(HttpRequest* req, HttpResponse* resp) {
   return 200;
 }
 
-int WebServer::httpWebhook(HttpRequest* req, HttpResponse* resp, const std::string &request_path) {
+int WebServer::httpWebhook(HttpRequest *req, HttpResponse *resp, const std::string &request_path) {
   auto now = std::chrono::system_clock::now().time_since_epoch();
   int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
   std::cout << "request_path: " << request_path << std::endl;

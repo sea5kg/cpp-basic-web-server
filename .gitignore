@@ -1,6 +1,6 @@
 /tmp
 /.wsjcpp
-/.logs
+/data/logs
 /my-little-dev-lab
 /libhv.*.log
 
