@@ -23,14 +23,43 @@
  * SOFTWARE.
  ***********************************************************************************/
 
-#include "employ_config.h"
+#include "mldl/include/config.h"
 #include "mldl/include/webhooks.h"
 #include <wsjcpp_core.h>
+#include <wsjcpp_employees.h>
 #include <wsjcpp_yaml.h>
+
+class EmployConfig : public WsjcppEmployBase, public mldl::config {
+public:
+  EmployConfig();
+  static std::string name() {
+    return "EmployConfig";
+  }
+
+  virtual bool init(const std::string &sName, bool bSilent) override;
+  virtual bool deinit(const std::string &sName, bool bSilent) override;
+
+  // mldl::config
+  virtual void set_data_dir(const std::string sConfigDir) override;
+  virtual const std::string &html_folder() const override;
+  virtual int web_port() const override;
+  virtual std::map<std::string, std::string> web_sites() const override;
+  virtual std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const override;
+  virtual std::map<std::string, std::shared_ptr<mldl::repository>> webhooks() const override;
+
+private:
+  std::string TAG;
+  std::string m_sConfigDir;
+  std::string m_sHtmlFolder;
+  int m_nPort;
+  std::map<std::string, std::string> m_web_sites;
+  std::map<std::string, std::shared_ptr<mldl::repository>> m_repositories;
+  std::map<std::string, std::shared_ptr<mldl::repository>> m_webhooks;
+};
 
 REGISTRY_WSJCPP_EMPLOY(EmployConfig)
 
-EmployConfig::EmployConfig() : WsjcppEmployBase({EmployConfig::name()}, {mldl::webhooks::name()}) {
+EmployConfig::EmployConfig() : WsjcppEmployBase({mldl::config::name()}, {mldl::webhooks::name()}) {
   TAG = "EmployConfig";
 }
 
@@ -48,7 +77,7 @@ bool EmployConfig::deinit(const std::string &sName, bool bSilent) {
   return true;
 }
 
-void EmployConfig::setDataDir(const std::string sConfigDir) {
+void EmployConfig::set_data_dir(const std::string sConfigDir) {
   WsjcppLog::info(TAG, "setDataDir: " + sConfigDir);
   m_sConfigDir = sConfigDir;
   m_sHtmlFolder = "";
@@ -126,11 +155,11 @@ void EmployConfig::setDataDir(const std::string sConfigDir) {
   }
 }
 
-const std::string &EmployConfig::getHtmlFolder() const {
+const std::string &EmployConfig::html_folder() const {
   return m_sHtmlFolder;
 }
 
-int EmployConfig::getPort() const {
+int EmployConfig::web_port() const {
   return m_nPort;
 }
 

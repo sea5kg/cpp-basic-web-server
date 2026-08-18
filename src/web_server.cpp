@@ -32,6 +32,7 @@
 #include "hlog.h"
 #include <regex>
 #include <wsjcpp_core.h>
+#include <wsjcpp_employees.h>
 // #include <wsjcpp_jsonrpc20.h>
 
 
@@ -40,11 +41,11 @@ using namespace hv;
 
 WebServer::WebServer() {
   TAG = "WebServer";
-  m_pConfig = findWsjcppEmploy<EmployConfig>();
+  m_pConfig = findWsjcppEmploy<mldl::config>();
   // m_pEmployFlags = findWsjcppEmploy<EmployFlags>();
   // m_pEmployDatabase = findWsjcppEmploy<EmployDatabase>();
   // m_pTeamLogos = findWsjcppEmploy<EmployTeamLogos>();
-  m_sHtmlFolder = m_pConfig->getHtmlFolder();
+  m_sHtmlFolder = m_pConfig->html_folder();
 
   // {
   //     logger_t* pLogger = hv_default_logger();

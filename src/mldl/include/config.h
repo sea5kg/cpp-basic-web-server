@@ -25,41 +25,25 @@
 
 #pragma once
 
-#include "employ_config.h"
-#include "mldl/objects/mldl_repository.h"
+#include <string>
 #include <memory>
-#include <wsjcpp_employees.h>
+#include "../objects/mldl_webhook.h"
+#include "../objects/mldl_repository.h"
 
-class EmployConfig : public WsjcppEmployBase { //, public IMyImpl, public IMyImpl2 {
+namespace mldl {
+
+class config {
 public:
-  EmployConfig();
   static std::string name() {
-    return "EmployConfig";
+    return "config";
   }
 
-  virtual bool init(const std::string &sName, bool bSilent) override;
-  virtual bool deinit(const std::string &sName, bool bSilent) override;
-
-  void setDataDir(const std::string sConfigDir);
-  const std::string &getHtmlFolder() const;
-  int getPort() const;
-
-  std::map<std::string, std::string> web_sites() const;
-  std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const;
-  std::map<std::string, std::shared_ptr<mldl::repository>> webhooks() const;
-
-  // // IMyImpl
-  // virtual void doSomething() override;
-
-  // // IMyImpl2
-  // virtual void doSomething2() override;
-
-private:
-  std::string TAG;
-  std::string m_sConfigDir;
-  std::string m_sHtmlFolder;
-  int m_nPort;
-  std::map<std::string, std::string> m_web_sites;
-  std::map<std::string, std::shared_ptr<mldl::repository>> m_repositories;
-  std::map<std::string, std::shared_ptr<mldl::repository>> m_webhooks;
+  virtual void set_data_dir(const std::string sConfigDir) = 0;
+  virtual const std::string &html_folder() const = 0;
+  virtual int web_port() const = 0;
+  virtual std::map<std::string, std::string> web_sites() const = 0;
+  virtual std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const = 0;
+  virtual std::map<std::string, std::shared_ptr<mldl::repository>> webhooks() const = 0;
 };
+
+} // namespace mldl

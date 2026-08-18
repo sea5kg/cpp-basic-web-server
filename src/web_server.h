@@ -28,7 +28,7 @@
 #include <string>
 #include <json.hpp>
 #include "HttpService.h"
-#include "mldl/employees/employ_config.h"
+#include "mldl/include/config.h"
 
 class WebServer {
 public:
@@ -42,7 +42,7 @@ private:
   std::string TAG;
   hv::HttpService *m_pHttpService;
 
-  EmployConfig *m_pConfig;
+  mldl::config *m_pConfig;
 
   std::string m_sIndexHtml;
   std::string m_sHtmlFolder;

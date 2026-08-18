@@ -23,10 +23,11 @@
  * SOFTWARE.
  ***********************************************************************************/
 
-#include <wsjcpp_core.h>
-#include "mldl/employees/employ_config.h"
+#include "WebSocketServer.h" // libhv
+#include "mldl/include/config.h"
 #include "web_server.h"
-#include "WebSocketServer.h"  // libhv
+#include <wsjcpp_core.h>
+#include <wsjcpp_employees.h>
 
 bool is_root() {
   // Root always has an Effective User ID (EUID) of 0
@@ -67,10 +68,10 @@ bool try_apply_mldl_user(const std::string &work_dir) {
     std::cout << "MLDL_USER='" << str_user << "'" << std::endl;
     try {
       user_id = std::stoi(str_user);
-    } catch (const std::invalid_argument& e) {
+    } catch (const std::invalid_argument &e) {
       std::cerr << "Error: No conversion could be performed. MLDL_USER='" << str_user << "'" << std::endl;
       return false;
-    } catch (const std::out_of_range& e) {
+    } catch (const std::out_of_range &e) {
       std::cerr << "The converted value is too big for an int.. MLDL_USER='" << str_user << "'" << std::endl;
       return false;
     } catch (...) {
@@ -78,7 +79,8 @@ bool try_apply_mldl_user(const std::string &work_dir) {
       return false;
     }
     if (is_root()) {
-      std::cout << " ...Try change owner for '" << work_dir << "' to '" << str_user << ":" << str_user << "'" << std::endl;
+      std::cout << " ...Try change owner for '" << work_dir << "' to '" << str_user << ":" << str_user << "'"
+                << std::endl;
       std::string cmd = "chown -R " + std::to_string(user_id) + ":" + std::to_string(user_id) + " \"" + work_dir + "\"";
       if (system(cmd.c_str()) == 0) {
         std::cout << " -> OK. Successful changed owner for data." << std::endl;
@@ -97,58 +99,55 @@ bool try_apply_mldl_user(const std::string &work_dir) {
   return true;
 }
 
-int main(int argc, const char* argv[]) {
-    std::string TAG = "MAIN";
-    std::string appName = std::string(WSJCPP_APP_NAME);
-    std::string appVersion = std::string(WSJCPP_APP_VERSION);
+int main(int argc, const char *argv[]) {
+  std::string TAG = "MAIN";
+  std::string appName = std::string(WSJCPP_APP_NAME);
+  std::string appVersion = std::string(WSJCPP_APP_VERSION);
 
-    // previous logs in current directory
-    if (!wsjcpp::dir_exists(".logs")) {
-        WsjcppCore::makeDir(".logs");
+  // previous logs in current directory
+  if (!wsjcpp::dir_exists(".logs")) {
+    WsjcppCore::makeDir(".logs");
+  }
+  WsjcppLog::setPrefixLogFile("cpp_web_server");
+  WsjcppLog::setLogDirectory(".logs");
+
+  // try find config.yml
+  const std::vector<std::string> vPossibleFolders = {"./data", "/root/data/"};
+  WsjcppEmployeesInit employees({}, false);
+  if (!employees.initialized) {
+    return -1;
+  }
+
+  auto *pConfig = findWsjcppEmploy<mldl::config>();
+
+  for (int i = 0; i < vPossibleFolders.size(); i++) {
+    std::string sWorkDir = vPossibleFolders[i];
+    if (sWorkDir[0] != '/') {
+      sWorkDir = WsjcppCore::getCurrentDirectory() + "/" + sWorkDir;
     }
-    WsjcppLog::setPrefixLogFile("cpp_web_server");
-    WsjcppLog::setLogDirectory(".logs");
-
-    // try find config.yml
-    const std::vector<std::string> vPossibleFolders = {
-        "./data",
-        "/root/data/"
-    };
-    WsjcppEmployeesInit employees({}, false);
-    if (!employees.initialized) {
-        return -1;
+    sWorkDir = wsjcpp::normalize_filepath(sWorkDir);
+    if (wsjcpp::file_exists(sWorkDir + "/config.yml")) {
+      std::cout << "Automatically detected workdir: " << sWorkDir << std::endl;
+      pConfig->set_data_dir(sWorkDir);
+      try_apply_mldl_user(sWorkDir);
+      break;
     }
+  }
 
-    auto *pConfig = findWsjcppEmploy<EmployConfig>();
+  WsjcppLog::ok(TAG, "Starting scoreboard on http://localhost:" + std::to_string(pConfig->web_port()) + "/");
 
-    for (int i = 0; i < vPossibleFolders.size(); i++) {
-        std::string sWorkDir = vPossibleFolders[i];
-        if (sWorkDir[0] != '/') {
-            sWorkDir = WsjcppCore::getCurrentDirectory() + "/" + sWorkDir;
-        }
-        sWorkDir = wsjcpp::normalize_filepath(sWorkDir);
-        if (wsjcpp::file_exists(sWorkDir + "/config.yml")) {
-            std::cout << "Automatically detected workdir: " << sWorkDir << std::endl;
-            pConfig->setDataDir(sWorkDir);
-            try_apply_mldl_user(sWorkDir);
-            break;
-        }
-    }
+  WebServer httpServer;
+  hv::HttpService *pRouter = httpServer.getService();
+  hv::HttpServer server(pRouter);
+  server.setPort(pConfig->web_port());
+  server.setThreadNum(4);
+  server.run();
 
-    WsjcppLog::ok(TAG, "Starting scoreboard on http://localhost:" + std::to_string(pConfig->getPort()) + "/");
+  // // websocket_server_t server;
+  // // server.service = pRouter;
+  // // server.port = 12345;
+  // // // server.ws = pWs;
+  // // websocket_server_run(&server);
 
-    WebServer httpServer;
-    hv::HttpService *pRouter = httpServer.getService();
-    hv::HttpServer server(pRouter);
-    server.setPort(pConfig->getPort());
-    server.setThreadNum(4);
-    server.run();
-
-    // // websocket_server_t server;
-    // // server.service = pRouter;
-    // // server.port = 12345;
-    // // // server.ws = pWs;
-    // // websocket_server_run(&server);
-
-    return 0;
+  return 0;
 }
