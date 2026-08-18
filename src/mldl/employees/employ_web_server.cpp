@@ -61,7 +61,6 @@ public:
   virtual int start() override;
 
   // other
-  hv::HttpService *getService();
   int httpHandleRequests(HttpRequest *req, HttpResponse *resp);
   int httpApi(HttpRequest *req, HttpResponse *resp);
   int httpWebhook(HttpRequest *req, HttpResponse *resp, const std::string &request_path);
@@ -70,10 +69,10 @@ private:
   std::string TAG;
   std::mutex m_mutex;
   hv::HttpService *m_pHttpService;
-  mldl::config *m_pConfig;
+  mldl::config *m_config;
   std::string m_sIndexHtml;
   std::string m_sHtmlFolder;
-  std::map<std::string, std::string> m_web_sites;
+  std::map<std::string, std::map<std::string, std::string>> m_web_sites;
 };
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
@@ -128,11 +127,11 @@ bool employ_web_server::deinit(const std::string &sName, bool bSilent) {
 }
 
 int employ_web_server::start() {
-  m_pConfig = findWsjcppEmploy<mldl::config>();
+  m_config = findWsjcppEmploy<mldl::config>();
   // m_pEmployFlags = findWsjcppEmploy<EmployFlags>();
   // m_pEmployDatabase = findWsjcppEmploy<EmployDatabase>();
   // m_pTeamLogos = findWsjcppEmploy<EmployTeamLogos>();
-  m_sHtmlFolder = m_pConfig->html_folder();
+  m_sHtmlFolder = m_config->mapping()["localhost"]["/"];
 
   // logger
   g_http_logger->set_log_filename_prefix("http_hv_");
@@ -154,7 +153,7 @@ int employ_web_server::start() {
     hlogi("This is an info message.");
   }
 
-  m_web_sites = m_pConfig->web_sites();
+  m_web_sites = m_config->mapping();
 
   // static files
   m_pHttpService->document_root = "./html";
@@ -165,7 +164,7 @@ int employ_web_server::start() {
       "*", std::bind(&employ_web_server::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
 
   hv::HttpServer server(m_pHttpService);
-  server.setPort(m_pConfig->web_port());
+  server.setPort(m_config->web_port());
   server.setThreadNum(4);
   server.run();
 
@@ -178,69 +177,81 @@ int employ_web_server::start() {
   return 0;
 }
 
-hv::HttpService *employ_web_server::getService() {
-  return m_pHttpService;
-}
-
 // int WebServer::httpApiV1GetPaths(HttpRequest* req, HttpResponse* resp) {
 //   return resp->Json(m_pHttpService->Paths());
 // }
 
 int employ_web_server::httpHandleRequests(HttpRequest *req, HttpResponse *resp) {
-  std::string host = req->host;
-  std::string html_folder = m_sHtmlFolder;
-  if (m_web_sites.count(host) > 0) {
-    html_folder = m_web_sites[host];
-    std::cout << req->host << " -> " << html_folder << std::endl;
-  }
-
-  std::string sOriginalRequestPath = req->path;
+  std::string original_request_path = req->path;
   std::string request_path;
-
-  // remove get params from path
-  std::size_t nFoundGetParams = sOriginalRequestPath.rfind("?");
-  if (nFoundGetParams != std::string::npos) {
-    request_path = sOriginalRequestPath.substr(0, nFoundGetParams);
+  std::size_t found_get_params = original_request_path.rfind("?");
+  if (found_get_params != std::string::npos) {
+    request_path = original_request_path.substr(0, found_get_params);
   } else {
-    request_path = sOriginalRequestPath;
+    request_path = original_request_path;
   }
   request_path = wsjcpp::normalize_filepath(request_path);
+
+  sea5kg::log::info(TAG, "request_path = " + request_path);
 
   if (wsjcpp::starts_with(request_path, "/webhook/")) {
     return this->httpWebhook(req, resp, request_path);
   }
 
-  // sea5kg::log::info(TAG, "request_path = " + request_path);
   if (wsjcpp::starts_with(request_path, "/api/")) {
     std::cout << "CALLED API" << std::endl;
     return this->httpApi(req, resp);
   }
 
-  if (request_path == "/") {
-    request_path = "/index.html";
+  std::string host = req->host;
+  std::string html_folder = "";
+  std::string subpath = "";
+  // m_config->host();
+  if (m_web_sites.count(host) > 0) {
+    std::map<std::string, std::string> paths = m_web_sites[host];
+    std::string found_real_path = "";
+    for (auto it = paths.begin(); it != paths.end(); ++it) {
+      if (wsjcpp::starts_with(request_path, it->first)) {
+        if (subpath.length() < it->first.length()) {
+          subpath = it->first;
+          found_real_path = it->second;
+        }
+      }
+    }
+    if (subpath != "") {
+      html_folder = found_real_path;
+    }
   }
 
-  if (request_path == "/admin" || request_path == "/admin/") {
-    request_path = "/index.html";
+  if (html_folder == "") {
+    return 404;
   }
 
-  // TODO
+  if (wsjcpp::ends_with(request_path, "/")) {
+    request_path += "index.html";
+  }
+
+  // if (request_path == "/admin" || request_path == "/admin/") {
+  //   request_path = "/index.html";
+  // }
+
   sea5kg::log::info(TAG, "Request path: " + request_path);
-  std::string sFilePath = wsjcpp::normalize_filepath(html_folder + "/" + request_path);
-  if (wsjcpp::file_exists(sFilePath)) { // TODO check the file exists not dir
-    return resp->File(sFilePath.c_str());
+  std::string filepath = wsjcpp::normalize_filepath(html_folder + "/" + request_path.substr(subpath.length(), request_path.length()));
+  sea5kg::log::info(TAG, "Mapping path: " + filepath);
+  if (wsjcpp::file_exists(filepath)) { // TODO check the file exists not dir
+    return resp->File(filepath.c_str());
   }
-  // cache
-  sea5kg::log::info(TAG, "File from cache: " + request_path);
-  std::string sResPath = "./data/html" + request_path;
-  if (WsjcppResourcesManager::has(sResPath)) {
-    WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
-    resp->Data((void *)pFile->getBuffer(), pFile->getBufferSize(),
-               true // nocopy
-    );
-    resp->SetContentTypeByFilename(sResPath.c_str());
-    return 200;
-  }
+  // // cache
+  // sea5kg::log::info(TAG, "File from cache: " + request_path);
+  // std::string sResPath = "./data/html" + request_path;
+  // if (WsjcppResourcesManager::has(sResPath)) {
+  //   WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
+  //   resp->Data((void *)pFile->getBuffer(), pFile->getBufferSize(),
+  //              true // nocopy
+  //   );
+  //   resp->SetContentTypeByFilename(sResPath.c_str());
+  //   return 200;
+  // }
   return 404; // Not found
 }
 
@@ -303,7 +314,7 @@ int employ_web_server::httpApi(HttpRequest *req, HttpResponse *resp) {
   // std::string sRequestIP_MsgSuffix = " (" + sRequestIP + ")";
 
   // // TODO light update scoreboard
-  // int nPoints = m_pConfig->scoreboard()->incrementAttackScore(flag, sTeamId);
+  // int nPoints = m_config->scoreboard()->incrementAttackScore(flag, sTeamId);
   // std::string sPoints = std::to_string(double(nPoints) / 10.0);
 
   // std::string sResponse = "Accepted: Received flag {" + sFlag + "} from {" + sTeamId + "} (Accepted + " + sPoints +
@@ -350,7 +361,7 @@ int employ_web_server::httpWebhook(HttpRequest *req, HttpResponse *resp, const s
 
 // int WebServer::httpApiV1Scoreboard(HttpRequest* req, HttpResponse* resp) {
 //     // m_pTeamLogos->updateLastWriteTime();
-//     // nlohmann::json jsonScoreboard = m_pConfig->scoreboard()->toJson();
+//     // nlohmann::json jsonScoreboard = m_config->scoreboard()->toJson();
 //     // m_pTeamLogos->updateScorebordJson(jsonScoreboard);
 //     // std::string sScoreboardJson = jsonScoreboard.dump();
 //     // resp->Data(

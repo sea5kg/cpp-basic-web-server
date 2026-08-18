@@ -1,5 +1,4 @@
 
-html-folder: ./html
 port: 10233
 
 repositories:
@@ -16,21 +15,11 @@ repositories:
     url: https://github.com/wsjcpp/wsjcpp-org
     webhook-update: tgNi7sZiQV
 
-mapping-html-folders:
+mapping-host-and-path-folders:
+  "localhost": "./html"
   "sea5kg.ru": "${repo-sea5kg-ru}/html"
   "localhost/sea5kg_ru": "${repo-sea5kg-ru}/html"
   "sea5kg.ru/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
   "localhost/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
   "wsjcpp.org": "${repo-wsjcpp-org}/web"
-  "localhost/wsjcpp.org/": "${repo-pipeline-editor-s5}/html"
-
-web-sites:
-  "sea5kg.ru":
-    git-repository: https://github.com/sea5kg/sea5kg_ru
-    html-folder: ./html
-  "sea5kg.ru/pipeline-editor-s5":
-    git-repository: https://github.com/sea-kg/pipeline-editor-s5
-    html-folder: ./html
-  "wsjcpp.org":
-    git-repository: https://github.com/wsjcpp/wsjcpp-org
-    html-folder: ./web
+  "localhost/wsjcpp_org/": "${repo-wsjcpp-org}/html"

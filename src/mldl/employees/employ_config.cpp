@@ -31,9 +31,9 @@
 #include <wsjcpp_employees.h>
 #include <wsjcpp_yaml.h>
 
-class EmployConfig : public WsjcppEmployBase, public mldl::config {
+class employ_config : public WsjcppEmployBase, public mldl::config {
 public:
-  EmployConfig();
+  employ_config();
   static std::string name() {
     return "CONFIG";
   }
@@ -44,46 +44,43 @@ public:
   // mldl::config
   virtual void set_data_dir(const std::string sConfigDir) override;
   virtual const std::string &data_dir() override;
-  virtual const std::string &html_folder() const override;
   virtual int web_port() const override;
-  virtual std::map<std::string, std::string> web_sites() const override;
+  virtual std::map<std::string, std::map<std::string, std::string>> mapping() const override;
   virtual std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const override;
-  virtual std::map<std::string, std::shared_ptr<mldl::repository>> webhooks() const override;
 
 private:
+  bool read_mapping_host_and_path_folders(WsjcppYaml &yaml);
+
   std::string TAG;
   std::string m_sConfigDir;
-  std::string m_sHtmlFolder;
   int m_nPort;
-  std::map<std::string, std::string> m_web_sites;
+  std::map<std::string, std::map<std::string, std::string>> m_mapping;
   std::map<std::string, std::shared_ptr<mldl::repository>> m_repositories;
-  std::map<std::string, std::shared_ptr<mldl::repository>> m_webhooks;
 };
 
-REGISTRY_WSJCPP_EMPLOY(EmployConfig)
+REGISTRY_WSJCPP_EMPLOY(employ_config)
 
-EmployConfig::EmployConfig() : WsjcppEmployBase({mldl::config::name()}, {mldl::webhooks::name()}) {
-  TAG = "EmployConfig";
+employ_config::employ_config() : WsjcppEmployBase({mldl::config::name()}, {mldl::webhooks::name()}) {
+  TAG = "employ_config";
 }
 
-bool EmployConfig::init(const std::string &sName, bool bSilent) {
+bool employ_config::init(const std::string &sName, bool bSilent) {
   if (!bSilent) {
     sea5kg::log::info(TAG, "init");
   }
   return true;
 }
 
-bool EmployConfig::deinit(const std::string &sName, bool bSilent) {
+bool employ_config::deinit(const std::string &sName, bool bSilent) {
   if (!bSilent) {
     sea5kg::log::info(TAG, "deinit");
   }
   return true;
 }
 
-void EmployConfig::set_data_dir(const std::string data_dir) {
+void employ_config::set_data_dir(const std::string data_dir) {
   sea5kg::log::info(TAG, "setDataDir: " + data_dir);
   m_sConfigDir = data_dir;
-  m_sHtmlFolder = "";
   std::string sConfigFile = data_dir + "/config.yml";
   if (!wsjcpp::file_exists(sConfigFile)) {
     sea5kg::log::critical(TAG, "File not found " + sConfigFile);
@@ -94,18 +91,6 @@ void EmployConfig::set_data_dir(const std::string data_dir) {
   if (!yaml.loadFromFile(sConfigFile, sError)) {
     sea5kg::log::critical(TAG, "Failed parsing yaml: " + sError);
   }
-  std::string sHtmlFolder = yaml["html-folder"].valStr();
-  if (sHtmlFolder == "") {
-    sea5kg::log::critical(TAG, "Missing option html-folder in " + sConfigFile);
-  }
-  if (sHtmlFolder != "/") {
-    sHtmlFolder = wsjcpp::normalize_filepath(m_sConfigDir + "/" + sHtmlFolder);
-  }
-  if (!wsjcpp::dir_exists(sHtmlFolder)) {
-    sea5kg::log::critical(TAG, "Folder not found " + sConfigFile);
-  }
-  m_sHtmlFolder = sHtmlFolder;
-  sea5kg::log::info(TAG, "Html Folder: " + m_sHtmlFolder);
 
   m_nPort = yaml["port"].valInt();
 
@@ -115,10 +100,10 @@ void EmployConfig::set_data_dir(const std::string data_dir) {
     if (!wsjcpp::dir_exists(repos_dir)) {
       WsjcppCore::makeDirsPath(repos_dir);
     }
-    std::vector<std::string> repositories = yaml["repositories"].keys();
-    for (int i = 0; i < repositories.size(); i++) {
+    std::vector<std::string> keys = yaml["repositories"].keys();
+    for (int i = 0; i < keys.size(); i++) {
       std::shared_ptr<mldl::repository> repo = std::make_shared<mldl::repository>();
-      std::string key = repositories[i];
+      std::string key = keys[i];
       sea5kg::log::info(TAG, "Registered repository key: " + key);
       WsjcppYamlCursor cur = yaml["repositories"][key];
       if (!repo->read_from_yaml(key, cur)) {
@@ -137,51 +122,73 @@ void EmployConfig::set_data_dir(const std::string data_dir) {
       m_repositories[key] = repo;
 
       findWsjcppEmploy<mldl::webhooks>()->registry_webhook(std::make_shared<mldl::mldl_webhook_git_repo_update>(repo));
-      m_webhooks[repo->webhook_update()] = repo;
     }
   }
 
-  // web-sites
-  std::string web_sites_dir = m_sConfigDir + "/web-sites";
-  if (!wsjcpp::dir_exists(web_sites_dir)) {
-    WsjcppCore::makeDirsPath(web_sites_dir);
-  }
-  std::vector<std::string> web_sites = yaml["web-sites"].keys();
-  for (int i = 0; i < web_sites.size(); i++) {
-    std::string key = web_sites[i];
-    WsjcppYamlCursor cur = yaml["web-sites"][key];
-    std::string web_site_folder = web_sites_dir + "/" + key;
-    std::string git_repo = cur["git-repository"];
-    if (!wsjcpp::dir_exists(web_site_folder)) {
-      std::string command = "git clone " + git_repo + " " + web_site_folder;
-      if (system(command.c_str()) != 0) {
-        sea5kg::log::critical(TAG, "Could not call command '" + command + "'");
-      }
-    }
-    m_web_sites[key] = web_site_folder + "/" + cur["html-folder"].valStr();
+  if (!read_mapping_host_and_path_folders(yaml)) {
+    sea5kg::log::critical(TAG, "Some problem with reading mapping");
   }
 }
 
-const std::string &EmployConfig::data_dir() {
+const std::string &employ_config::data_dir() {
   return m_sConfigDir;
 }
 
-const std::string &EmployConfig::html_folder() const {
-  return m_sHtmlFolder;
-}
-
-int EmployConfig::web_port() const {
+int employ_config::web_port() const {
   return m_nPort;
 }
 
-std::map<std::string, std::string> EmployConfig::web_sites() const {
-  return m_web_sites;
+std::map<std::string, std::map<std::string, std::string>> employ_config::mapping() const {
+  return m_mapping;
 }
 
-std::map<std::string, std::shared_ptr<mldl::repository>> EmployConfig::repositories() const {
+std::map<std::string, std::shared_ptr<mldl::repository>> employ_config::repositories() const {
   return m_repositories;
 }
 
-std::map<std::string, std::shared_ptr<mldl::repository>> EmployConfig::webhooks() const {
-  return m_webhooks;
+bool employ_config::read_mapping_host_and_path_folders(WsjcppYaml &yaml) {
+  if (yaml["mapping-host-and-path-folders"].isMap()) {
+    std::vector<std::string> keys = yaml["mapping-host-and-path-folders"].keys();
+    for (int i = 0; i < keys.size(); i++) {
+      std::string key = keys[i];
+      std::string host = key;
+      if (!wsjcpp::ends_with(host, "/")) {
+        host += "/";
+      }
+      std::vector<std::string> vHost = wsjcpp::split(host, "/");
+      host = vHost[0];
+      std::string path = key.substr(host.length(), key.length());
+      if (!wsjcpp::ends_with(path, "/")) {
+        path += "/";
+      }
+      std::string real_path = yaml["mapping-host-and-path-folders"][key].valStr();
+      if (wsjcpp::starts_with(real_path, "./")) {
+        real_path = wsjcpp::normalize_filepath(m_sConfigDir + "/" + real_path);
+      }
+      if (!wsjcpp::ends_with(real_path, "/")) {
+        real_path += "/";
+      }
+      for (auto it = m_repositories.begin(); it != m_repositories.end(); ++it) {
+        std::string repo_var = "${" + it->first + "}";
+        wsjcpp::replace_all_in(real_path, repo_var, it->second->repo_folder());
+      }
+      std::cout << "real_path = " << real_path << std::endl;
+      if (!wsjcpp::dir_exists(real_path)) {
+        sea5kg::log::warning(TAG, "Not found directory: " + real_path);
+        continue;
+      }
+
+      if (m_mapping.count(host) == 0) {
+        sea5kg::log::info(TAG, "Init host-name: " + host);
+        m_mapping[host] = std::map<std::string, std::string>();
+      }
+      sea5kg::log::info(TAG, "Registered mapping: " + host + path + " -> " + real_path);
+      if (!wsjcpp::dir_exists(real_path)) {
+        sea5kg::log::critical(TAG, "Folder not found " + real_path);
+      }
+      m_mapping[host][path] = real_path;
+    }
+    return true;
+  }
+  return false;
 }
