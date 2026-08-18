@@ -25,6 +25,7 @@
 
 #include "mldl/include/config.h"
 #include "mldl/include/webhooks.h"
+#include "mldl/objects/mldl_webhook_git_repo_update.h"
 #include <sea5kg_logger.h>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
@@ -129,11 +130,13 @@ void EmployConfig::set_data_dir(const std::string data_dir) {
       sea5kg::log::info(TAG, "Registered repository: " + git_repo);
       if (!wsjcpp::dir_exists(repo->repo_folder())) {
         std::string command = "git clone " + repo->url() + " " + repo->repo_folder();
-        system(command.c_str());
+        if (system(command.c_str()) != 0) {
+          sea5kg::log::critical(TAG, "Could not call command '" + command + "'");
+        }
       }
       m_repositories[key] = repo;
 
-      findWsjcppEmploy<mldl::webhooks>()->registry_webhook(std::make_shared<mldl::webhook>(repo->webhook_update()));
+      findWsjcppEmploy<mldl::webhooks>()->registry_webhook(std::make_shared<mldl::mldl_webhook_git_repo_update>(repo));
       m_webhooks[repo->webhook_update()] = repo;
     }
   }
@@ -151,7 +154,9 @@ void EmployConfig::set_data_dir(const std::string data_dir) {
     std::string git_repo = cur["git-repository"];
     if (!wsjcpp::dir_exists(web_site_folder)) {
       std::string command = "git clone " + git_repo + " " + web_site_folder;
-      system(command.c_str());
+      if (system(command.c_str()) != 0) {
+        sea5kg::log::critical(TAG, "Could not call command '" + command + "'");
+      }
     }
     m_web_sites[key] = web_site_folder + "/" + cur["html-folder"].valStr();
   }

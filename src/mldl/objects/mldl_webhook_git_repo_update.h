@@ -30,20 +30,25 @@
  * Original repository: https://github.com/sea5kg/my-little-dev-lab
  */
 
+#pragma once
+
+#include "mldl_repository.h"
 #include "mldl_webhook.h"
-#include <sea5kg_logger.h>
+#include <memory>
+#include <string>
 
 namespace mldl {
 
-webhook::webhook(const std::string &id) : m_id(id) {};
+class mldl_webhook_git_repo_update : public webhook {
+public:
+  mldl_webhook_git_repo_update(std::shared_ptr<mldl::repository> repo);
 
-const std::string &webhook::id() const {
-  return m_id;
-}
+  // mldl::webhook
+  virtual bool call() override;
 
-bool webhook::call() {
-  sea5kg::log::warning("webhook", "webhook::call nothing");
-  return false;
-}
+private:
+  std::string TAG;
+  std::shared_ptr<mldl::repository> m_repo;
+};
 
 } // namespace mldl

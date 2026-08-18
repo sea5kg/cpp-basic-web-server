@@ -30,19 +30,24 @@
  * Original repository: https://github.com/sea5kg/my-little-dev-lab
  */
 
-#include "mldl_webhook.h"
+#include "mldl_webhook_git_repo_update.h"
 #include <sea5kg_logger.h>
 
 namespace mldl {
 
-webhook::webhook(const std::string &id) : m_id(id) {};
-
-const std::string &webhook::id() const {
-  return m_id;
+mldl_webhook_git_repo_update::mldl_webhook_git_repo_update(std::shared_ptr<mldl::repository> repo)
+    : webhook(repo->webhook_update()), m_repo(repo) {
+  TAG = "WEBHOOK_" + repo->webhook_update();
 }
 
-bool webhook::call() {
-  sea5kg::log::warning("webhook", "webhook::call nothing");
+bool mldl_webhook_git_repo_update::call() {
+  std::string cmd = "git -C " + m_repo->repo_folder() + " pull";
+  sea5kg::log::info(TAG, "Try call command '" + cmd + "'");
+  if (system(cmd.c_str()) == 0) {
+    sea5kg::log::success(TAG, "Command '" + cmd + "' executed.");
+    return true;
+  }
+  sea5kg::log::error(TAG, "Command '" + cmd + "' failed.");
   return false;
 }
 

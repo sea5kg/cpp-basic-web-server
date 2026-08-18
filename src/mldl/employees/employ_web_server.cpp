@@ -32,6 +32,7 @@
 
 #include "HttpService.h"
 #include "mldl/include/config.h"
+#include "mldl/include/webhooks.h"
 #include "mldl/include/web_server.h"
 #include <json.hpp>
 #include <memory>
@@ -77,7 +78,7 @@ private:
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
 
-employ_web_server::employ_web_server() : WsjcppEmployBase({mldl::web_server::name()}, {mldl::config::name()}) {
+employ_web_server::employ_web_server() : WsjcppEmployBase({mldl::web_server::name()}, {mldl::config::name(), mldl::webhooks::name()}) {
   TAG = "WEB_SERVER";
   m_pHttpService = new hv::HttpService();
 }
@@ -206,7 +207,6 @@ int employ_web_server::httpHandleRequests(HttpRequest *req, HttpResponse *resp) 
   request_path = wsjcpp::normalize_filepath(request_path);
 
   if (wsjcpp::starts_with(request_path, "/webhook/")) {
-    std::cout << "CALLED WebHook" << std::endl;
     return this->httpWebhook(req, resp, request_path);
   }
 
@@ -318,9 +318,8 @@ int employ_web_server::httpApi(HttpRequest *req, HttpResponse *resp) {
 }
 
 int employ_web_server::httpWebhook(HttpRequest *req, HttpResponse *resp, const std::string &request_path) {
-  auto now = std::chrono::system_clock::now().time_since_epoch();
-  int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
-  std::cout << "request_path: " << request_path << std::endl;
+  // auto now = std::chrono::system_clock::now().time_since_epoch();
+  // int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
 
   if (req->method != HTTP_POST && req->method != HTTP_GET) {
     std::cout << "Expected POST or GET" << std::endl;
@@ -328,17 +327,23 @@ int employ_web_server::httpWebhook(HttpRequest *req, HttpResponse *resp, const s
   }
   static const std::string webhook_prefix = "/webhook/";
   if (!wsjcpp::starts_with(request_path, webhook_prefix)) {
-    std::cout << "wrong prefix" << std::endl;
+    sea5kg::log::error(TAG, "wrong prefix in request_path: " + request_path);
     return 403;
   }
   std::string webhook_id = request_path.substr(webhook_prefix.size(), 100);
-  std::cout << "substr: " << webhook_id << std::endl;
-  std::map<std::string, std::shared_ptr<mldl::repository>> hooks = m_pConfig->webhooks();
-  if (!hooks.count(webhook_id)) {
-    std::cout << "Not found webhook: " << webhook_id << std::endl;
+  sea5kg::log::info(TAG, "webhook_id: " + webhook_id);
+
+  auto webhooks = findWsjcppEmploy<mldl::webhooks>();
+
+  if (!webhooks->contains(webhook_id)) {
+    sea5kg::log::error(TAG, "Not found webhook: " + webhook_id);
     return 404;
   }
-  std::cout << "repo_folder: " << hooks[webhook_id]->repo_folder() << std::endl;
+
+  if (!webhooks->call(webhook_id)) {
+    sea5kg::log::error(TAG, "Could not call webhook: " + webhook_id);
+    return 500;
+  }
 
   return 200;
 }

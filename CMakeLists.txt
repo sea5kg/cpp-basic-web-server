@@ -49,15 +49,16 @@ set(EXECUTABLE_OUTPUT_PATH ${my-little-dev-lab_SOURCE_DIR})
 # Sources
 
 # include header dirs
-list (APPEND WSJCPP_INCLUDE_DIRS "src")
-list (APPEND WSJCPP_INCLUDE_DIRS "src/third_party/sqlite3/src")
+list (APPEND WSJCPP_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src")
+list (APPEND WSJCPP_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/third_party/sqlite3/src")
 
-list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_config.cpp")
-list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_web_server.cpp")
-list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_webhooks.cpp")
-list (APPEND WSJCPP_SOURCES "./src/mldl/objects/mldl_repository.cpp")
-list (APPEND WSJCPP_SOURCES "./src/mldl/objects/mldl_webhook.cpp")
-list (APPEND WSJCPP_SOURCES "./src/main.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_config.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_web_server.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_webhooks.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/objects/mldl_repository.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/objects/mldl_webhook_git_repo_update.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/objects/mldl_webhook.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
 # # CURL
 FIND_PACKAGE(CURL)
