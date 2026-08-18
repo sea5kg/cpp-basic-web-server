@@ -58,6 +58,12 @@ dependencies:
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/nlohmann_json"
     installation-datetime: "Fri, 02 Jan 2026 05:44:07 GMT"
+  - name: "sea5kg-logger"
+    version: "v2.0.1"
+    url: "https://github.com/sea5kg/sea5kg-logger:master"
+    origin: "https://github.com/"
+    installation-dir: "./src.wsjcpp/sea5kg_logger"
+    installation-datetime: "Tue, 18 Aug 2026 06:58:20 GMT"
 resources:
   output-generation-dir: src/wsjcpp_resources
   files:
