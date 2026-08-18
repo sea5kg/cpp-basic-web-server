@@ -1,14 +1,15 @@
 {
   "C_Cpp.clang_format_style": "file",
     "cSpell.words": [
-        "Evgenii",
-        "EVPP",
-        "libhv",
-        "lpthread",
-        "MLDL",
-        "MQTT",
-        "Sopov",
-        "THREADSAFE",
-        "wsjcpp"
+      "Evgenii",
+      "EVPP",
+      "hlogi",
+      "libhv",
+      "lpthread",
+      "MLDL",
+      "MQTT",
+      "Sopov",
+      "THREADSAFE",
+      "wsjcpp"
     ]
 }

@@ -23,45 +23,15 @@
  * SOFTWARE.
  ***********************************************************************************/
 
-#include "WebSocketServer.h" // libhv
+
 #include "mldl/include/config.h"
-#include "web_server.h"
+#include "mldl/include/web_server.h"
+#include <unistd.h>
 #include <sea5kg_logger.h>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
 
-bool is_root() {
-  // Root always has an Effective User ID (EUID) of 0
-  return geteuid() == 0;
-}
-
-bool change_privileges(int user_id) {
-  std::cout << " ...Trying change privileges (setgid)" << std::endl;
-  if (setgid(user_id) != 0) {
-    std::cerr << " -> FAIL. Failed to set GID" << std::endl;
-    return false;
-  }
-  std::cout << " ...Trying change privileges (setuid)" << std::endl;
-  if (setuid(user_id) != 0) {
-    std::cerr << " -> FAIL. Failed to set UID" << std::endl;
-    return false;
-  }
-  std::cout << " ...Trying change privileges (verify)" << std::endl;
-  if (setuid(0) == 0) {
-    std::cerr << " -> FAIL. Security Risk: Privileges were not permanently dropped!" << std::endl;
-    return false;
-  }
-  std::cout << " ...Trying change privileges (test)" << std::endl;
-  if (getuid() == user_id) {
-    std::cout << "-> OK. Successful changed privileges." << std::endl;
-  } else {
-    std::cerr << " -> FAIL. NOT CHANGED." << std::endl;
-    return false;
-  }
-  return true;
-}
-
-bool try_apply_mldl_user(const std::string &work_dir) {
+bool try_apply_mldl_user(const std::string &work_dir, std::string &error) {
   // std::cout << "work_dir = " << work_dir << std::endl;
   std::string str_user;
   int user_id = 0;
@@ -79,7 +49,7 @@ bool try_apply_mldl_user(const std::string &work_dir) {
       std::cerr << "The converted value is too big for an int.. MLDL_USER='" << str_user << "'" << std::endl;
       return false;
     }
-    if (is_root()) {
+    if (wsjcpp::user_is_root()) {
       std::cout << " ...Try change owner for '" << work_dir << "' to '" << str_user << ":" << str_user << "'"
                 << std::endl;
       std::string cmd = "chown -R " + std::to_string(user_id) + ":" + std::to_string(user_id) + " \"" + work_dir + "\"";
@@ -89,11 +59,11 @@ bool try_apply_mldl_user(const std::string &work_dir) {
         std::cerr << " -> FAIL. Could not change owner for directory." << std::endl;
         return false;
       }
-      return change_privileges(user_id);
+      return wsjcpp::change_current_process_privileges(user_id, error);
     } else if (geteuid() == user_id) {
       std::cout << " * OK. MLDL_USER is equal with current user" << std::endl;
     } else {
-      return change_privileges(user_id);
+      return wsjcpp::change_current_process_privileges(user_id, error);
     }
     return true;
   }
@@ -124,13 +94,16 @@ int main(int argc, const char *argv[]) {
     data_dir = wsjcpp::normalize_filepath(data_dir);
     if (wsjcpp::file_exists(data_dir + "/config.yml")) {
       std::cout << "Automatically detected data-dir: " << data_dir << std::endl;
-      try_apply_mldl_user(data_dir);
       break;
     }
   }
 
   if (data_dir == "") {
     sea5kg::log::critical(TAG, "Not found data-dir");
+  }
+  std::string error;
+  if (!try_apply_mldl_user(data_dir, error)) {
+    sea5kg::log::info(TAG, "try_apply_mldl_user: " + error);
   }
 
   std::string log_dir = data_dir + "/logs/%Y/%m/%d/";
@@ -149,18 +122,7 @@ int main(int argc, const char *argv[]) {
 
   sea5kg::log::success(TAG, "Starting scoreboard on http://localhost:" + std::to_string(pConfig->web_port()) + "/");
 
-  WebServer httpServer;
-  hv::HttpService *pRouter = httpServer.getService();
-  hv::HttpServer server(pRouter);
-  server.setPort(pConfig->web_port());
-  server.setThreadNum(4);
-  server.run();
+  auto *web = findWsjcppEmploy<mldl::web_server>();
 
-  // // websocket_server_t server;
-  // // server.service = pRouter;
-  // // server.port = 12345;
-  // // // server.ws = pWs;
-  // // websocket_server_run(&server);
-
-  return 0;
+  return web->start();
 }

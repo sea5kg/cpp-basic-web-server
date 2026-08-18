@@ -1,5 +1,10 @@
 ##################################################################################
 #
+#         ▜ ▘▗ ▗ ▜      ▌      ▜   ▌
+# ▛▛▌▌▌  ▐ ▌▜▘▜▘▐ █▌  ▛▌█▌▌▌  ▐ ▀▌▛▌
+# ▌▌▌▙▌  ▐▖▌▐▖▐▖▐▖▙▖  ▙▌▙▖▚▘  ▐▖█▌▙▌
+#    ▄▌
+#
 # MIT License
 #
 # Copyright (c) 2025-2026 Evgenii Sopov
@@ -21,6 +26,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
+# Original repository: https://github.com/sea5kg/my-little-dev-lab
+#
 ##################################################################################
 
 # CMake script
@@ -45,8 +53,8 @@ list (APPEND WSJCPP_INCLUDE_DIRS "src")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/third_party/sqlite3/src")
 
 list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_config.cpp")
+list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_web_server.cpp")
 list (APPEND WSJCPP_SOURCES "./src/mldl/employees/employ_webhooks.cpp")
-list (APPEND WSJCPP_SOURCES "./src/web_server.cpp")
 list (APPEND WSJCPP_SOURCES "./src/mldl/objects/mldl_repository.cpp")
 list (APPEND WSJCPP_SOURCES "./src/mldl/objects/mldl_webhook.cpp")
 list (APPEND WSJCPP_SOURCES "./src/main.cpp")

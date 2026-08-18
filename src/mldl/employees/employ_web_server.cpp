@@ -1,4 +1,9 @@
-/**********************************************************************************
+/*
+ *
+ *         ▜ ▘▗ ▗ ▜      ▌      ▜   ▌
+ * ▛▛▌▌▌  ▐ ▌▜▘▜▘▐ █▌  ▛▌█▌▌▌  ▐ ▀▌▛▌
+ * ▌▌▌▙▌  ▐▖▌▐▖▐▖▐▖▙▖  ▙▌▙▖▚▘  ▐▖█▌▙▌
+ *    ▄▌
  *
  * MIT License
  *
@@ -21,22 +26,61 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- ***********************************************************************************/
+ *
+ * Original repository: https://github.com/sea5kg/my-little-dev-lab
+ */
 
-#include "web_server.h"
-
-// #include "WebSocketServer.h"
-#include "EventLoop.h"
-#include "hlog.h"
-#include "hssl.h"
-#include "htime.h"
-#include <regex>
+#include "HttpService.h"
+#include "mldl/include/config.h"
+#include "mldl/include/web_server.h"
+#include <json.hpp>
+#include <memory>
+#include <mutex>
 #include <sea5kg_logger.h>
+#include <string>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
-// #include <wsjcpp_jsonrpc20.h>
+// #include "WebSocketServer.h"
+#include "EventLoop.h"
+#include "WebSocketServer.h" // libhv
+#include "hlog.h" // libhv
+#include "hssl.h" // libhv
+#include "htime.h" // libhv
+#include <regex>
 
-using namespace hv;
+class employ_web_server : public WsjcppEmployBase, public mldl::web_server {
+public:
+  employ_web_server();
+
+  // WsjcppEmployBase
+  virtual bool init(const std::string &sName, bool bSilent) override;
+  virtual bool deinit(const std::string &sName, bool bSilent) override;
+
+  // mldl::web_server
+  virtual int start() override;
+
+  // other
+  hv::HttpService *getService();
+  int httpHandleRequests(HttpRequest *req, HttpResponse *resp);
+  int httpApi(HttpRequest *req, HttpResponse *resp);
+  int httpWebhook(HttpRequest *req, HttpResponse *resp, const std::string &request_path);
+
+private:
+  std::string TAG;
+  std::mutex m_mutex;
+  hv::HttpService *m_pHttpService;
+  mldl::config *m_pConfig;
+  std::string m_sIndexHtml;
+  std::string m_sHtmlFolder;
+  std::map<std::string, std::string> m_web_sites;
+};
+
+REGISTRY_WSJCPP_EMPLOY(employ_web_server)
+
+employ_web_server::employ_web_server() : WsjcppEmployBase({mldl::web_server::name()}, {mldl::config::name()}) {
+  TAG = "WEB_SERVER";
+  m_pHttpService = new hv::HttpService();
+}
 
 static std::shared_ptr<sea5kg::logger> g_http_logger = std::shared_ptr<sea5kg::logger>(sea5kg::logger::create());
 
@@ -68,8 +112,21 @@ void EmployWebServer_custom_logger(int level, const char *msg, int len) {
   }
 }
 
-WebServer::WebServer() {
-  TAG = "WEB";
+bool employ_web_server::init(const std::string &name, bool bSilent) {
+  if (!bSilent) {
+    sea5kg::log::info(TAG, "init " + name);
+  }
+  return true;
+}
+
+bool employ_web_server::deinit(const std::string &sName, bool bSilent) {
+  if (!bSilent) {
+    sea5kg::log::info(TAG, "deinit");
+  }
+  return true;
+}
+
+int employ_web_server::start() {
   m_pConfig = findWsjcppEmploy<mldl::config>();
   // m_pEmployFlags = findWsjcppEmploy<EmployFlags>();
   // m_pEmployDatabase = findWsjcppEmploy<EmployDatabase>();
@@ -83,7 +140,8 @@ WebServer::WebServer() {
   g_http_logger->set_log_level_file_output(sea5kg::log_level::DEBUG);
   g_http_logger->set_log_level_console_output(sea5kg::log_level::DEBUG);
 
-  // std::string starting_message = "Starting web on http://localhost:" + std::to_string(bna_server::WEB_TCP_PORT) + "/";
+  // std::string starting_message = "Starting web on http://localhost:" + std::to_string(bna_server::WEB_TCP_PORT) +
+  // "/";
   g_http_logger->success(TAG, "init");
 
   {
@@ -95,31 +153,31 @@ WebServer::WebServer() {
     hlogi("This is an info message.");
   }
 
-  // {
-  //     logger_t* pLogger = hv_default_logger();
-  //     // logger_set_max_filesize(pLogger, 102400);
-  //     std::string sLogDirPath = m_pConfig->getWorkDir() + "/hv_logs";
-  //     if (!wsjcpp::dir_exists(sLogDirPath)) {
-  //         WsjcppCore::makeDir(sLogDirPath);
-  //     }
-  //     std::string sLogFilePath = sLogDirPath + "/http_" + WsjcppCore::getCurrentTimeForFilename() + ".log";
-  //     logger_set_file(pLogger, sLogFilePath.c_str());
-  // }
-
-  m_pHttpService = new HttpService();
-
   m_web_sites = m_pConfig->web_sites();
 
   // static files
   m_pHttpService->document_root = "./html";
 
-  m_pHttpService->GET("*",
-                      std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
-  m_pHttpService->POST("*",
-                       std::bind(&WebServer::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
+  m_pHttpService->GET(
+      "*", std::bind(&employ_web_server::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
+  m_pHttpService->POST(
+      "*", std::bind(&employ_web_server::httpHandleRequests, this, std::placeholders::_1, std::placeholders::_2));
+
+  hv::HttpServer server(m_pHttpService);
+  server.setPort(m_pConfig->web_port());
+  server.setThreadNum(4);
+  server.run();
+
+  // // websocket_server_t server;
+  // // server.service = pRouter;
+  // // server.port = 12345;
+  // // // server.ws = pWs;
+  // // websocket_server_run(&server);
+
+  return 0;
 }
 
-hv::HttpService *WebServer::getService() {
+hv::HttpService *employ_web_server::getService() {
   return m_pHttpService;
 }
 
@@ -127,7 +185,7 @@ hv::HttpService *WebServer::getService() {
 //   return resp->Json(m_pHttpService->Paths());
 // }
 
-int WebServer::httpHandleRequests(HttpRequest *req, HttpResponse *resp) {
+int employ_web_server::httpHandleRequests(HttpRequest *req, HttpResponse *resp) {
   std::string host = req->host;
   std::string html_folder = m_sHtmlFolder;
   if (m_web_sites.count(host) > 0) {
@@ -186,7 +244,7 @@ int WebServer::httpHandleRequests(HttpRequest *req, HttpResponse *resp) {
   return 404; // Not found
 }
 
-int WebServer::httpApi(HttpRequest *req, HttpResponse *resp) {
+int employ_web_server::httpApi(HttpRequest *req, HttpResponse *resp) {
   auto now = std::chrono::system_clock::now().time_since_epoch();
   int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
 
@@ -242,14 +300,14 @@ int WebServer::httpApi(HttpRequest *req, HttpResponse *resp) {
   std::cout << req->body << ", req_json_body.dump(): " << req_json_body.dump() << ", sMethod: " << sMethod << std::endl;
 
   // std::string sRequestIP = req->client_addr.ip;
-  // std::string sRequestIP_MsgSuffex = " (" + sRequestIP + ")";
+  // std::string sRequestIP_MsgSuffix = " (" + sRequestIP + ")";
 
   // // TODO light update scoreboard
   // int nPoints = m_pConfig->scoreboard()->incrementAttackScore(flag, sTeamId);
   // std::string sPoints = std::to_string(double(nPoints) / 10.0);
 
-  // std::string sResponse = "Accepted: Recieved flag {" + sFlag + "} from {" + sTeamId + "} (Accepted + " + sPoints +
-  // ")"; sea5kg::log::ok(TAG, sResponse + sRequestIP_MsgSuffex); resp->Data(
+  // std::string sResponse = "Accepted: Received flag {" + sFlag + "} from {" + sTeamId + "} (Accepted + " + sPoints +
+  // ")"; sea5kg::log::ok(TAG, sResponse + sRequestIP_MsgSuffix); resp->Data(
   //     (void *)(sResponse.c_str()),
   //     sResponse.size(),
   //     false // copy buffer
@@ -259,7 +317,7 @@ int WebServer::httpApi(HttpRequest *req, HttpResponse *resp) {
   return 200;
 }
 
-int WebServer::httpWebhook(HttpRequest *req, HttpResponse *resp, const std::string &request_path) {
+int employ_web_server::httpWebhook(HttpRequest *req, HttpResponse *resp, const std::string &request_path) {
   auto now = std::chrono::system_clock::now().time_since_epoch();
   int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
   std::cout << "request_path: " << request_path << std::endl;
