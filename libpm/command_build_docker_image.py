@@ -37,6 +37,7 @@
 import os
 import sys
 import logging
+import yaml
 from .utils_log import UtilsLog
 from .utils_docker import UtilsDocker
 from .pm_config import PmConfig
@@ -68,12 +69,18 @@ class CommandBuildDockerImage:
         """ executing """
         os.chdir(self.__config.get_root_dir())
         self.__log.info("Build docker image...")
+        wsjcpp_yaml_path = os.path.join(self.__config.get_root_dir(), "wsjcpp.yml")
+        version = None
+        with open(wsjcpp_yaml_path, 'r') as file:
+            data = yaml.safe_load(file)
+            version = data["version"]
 
         tag_build_latest = self.__config.base_docker_tag() + ":latest"
-        # TODO read from wsjcpp.yaml
-        tag_build_version = self.__config.base_docker_tag() + ":v0.1.0"
+        tag_build_version = self.__config.base_docker_tag() + ":" + version
 
         UtilsDocker.silent_remove_image(tag_build_latest, self.__log)
+        UtilsDocker.silent_remove_image(tag_build_version, self.__log)
         UtilsDocker.build_docker_image(tag_build_latest, "Dockerfile", self.__log)
+        UtilsDocker.build_docker_image(tag_build_version, "Dockerfile", self.__log)
 
         sys.exit(0)

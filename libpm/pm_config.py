@@ -65,6 +65,7 @@ class PmConfig:
         """ return repository link """
         return self.__repo_url
 
+
 class FolderSwitcher:
     """
         Change work directory to specify folder
