@@ -36,7 +36,8 @@
 
 namespace mldl {
 
-webhook::webhook(const std::string &id) : m_id(id) {};
+webhook::webhook(const std::string &id) : m_id(id) {
+}
 
 const std::string &webhook::id() const {
   return m_id;
