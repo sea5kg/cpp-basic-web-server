@@ -69,14 +69,17 @@ class CommandClangFormat:
         self.__log.info("Clang-format...")
         root_dir = self.__config.get_root_dir()
         src_dir = os.path.join(root_dir, "src")
+        style_file = os.path.join(root_dir, ".clang-format")
 
         files = UtilsFiles.get_all_files(src_dir)
         for _file in files:
-            if 'third-party' in _file:
+            if 'third_party' in _file:
+                continue
+            if 'wsjcpp_resources' in _file:
                 continue
             _file_lo = _file.lower()
             if not _file_lo.endswith(".cpp") and not _file_lo.endswith(".h"):
                 continue
-            command = ["clang-format", '-style=file', '-i', _file]
+            command = ["clang-format", '-style=file:' + style_file, '-i', _file]
             UtilsShell.run_command(command)
         sys.exit(0)

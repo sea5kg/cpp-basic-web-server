@@ -33,8 +33,8 @@
 
 #include "HttpService.h"
 #include "mldl/include/config.h"
-#include "mldl/include/webhooks.h"
 #include "mldl/include/web_server.h"
+#include "mldl/include/webhooks.h"
 #include <json.hpp>
 #include <memory>
 #include <mutex>
@@ -45,9 +45,9 @@
 // #include "WebSocketServer.h"
 #include "EventLoop.h"
 #include "WebSocketServer.h" // libhv
-#include "hlog.h" // libhv
-#include "hssl.h" // libhv
-#include "htime.h" // libhv
+#include "hlog.h"            // libhv
+#include "hssl.h"            // libhv
+#include "htime.h"           // libhv
 #include <regex>
 
 class employ_web_server : public WsjcppEmployBase, public mldl::web_server {
@@ -78,7 +78,8 @@ private:
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
 
-employ_web_server::employ_web_server() : WsjcppEmployBase({mldl::web_server::name()}, {mldl::config::name(), mldl::webhooks::name()}) {
+employ_web_server::employ_web_server()
+    : WsjcppEmployBase({mldl::web_server::name()}, {mldl::config::name(), mldl::webhooks::name()}) {
   TAG = "WEB_SERVER";
   m_pHttpService = new hv::HttpService();
 }
@@ -237,7 +238,8 @@ int employ_web_server::httpHandleRequests(HttpRequest *req, HttpResponse *resp) 
   // }
 
   sea5kg::log::info(TAG, "Request path: " + request_path);
-  std::string filepath = wsjcpp::normalize_filepath(html_folder + "/" + request_path.substr(subpath.length(), request_path.length()));
+  std::string filepath =
+      wsjcpp::normalize_filepath(html_folder + "/" + request_path.substr(subpath.length(), request_path.length()));
   sea5kg::log::info(TAG, "Mapping path: " + filepath);
   if (wsjcpp::file_exists(filepath)) { // TODO check the file exists not dir
     return resp->File(filepath.c_str());

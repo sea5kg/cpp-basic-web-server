@@ -39,7 +39,9 @@ namespace mldl {
 
 class web_server {
 public:
-  static std::string name() { return "web_server"; }
+  static std::string name() {
+    return "web_server";
+  }
   virtual int start() = 0;
 };
 

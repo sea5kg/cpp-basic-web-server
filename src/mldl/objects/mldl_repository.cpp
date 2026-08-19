@@ -41,7 +41,7 @@
 
 namespace mldl {
 
-repository::repository() {};
+repository::repository(){};
 
 bool repository::read_from_yaml(const std::string &key, WsjcppYamlCursor &cur) {
   m_key = key;
