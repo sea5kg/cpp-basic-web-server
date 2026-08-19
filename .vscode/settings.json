@@ -5,6 +5,7 @@
       "EVPP",
       "hlogi",
       "libhv",
+      "libpm",
       "lpthread",
       "MLDL",
       "MQTT",

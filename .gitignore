@@ -3,6 +3,7 @@
 /data/logs
 /my-little-dev-lab
 /libhv.*.log
+__pycache__
 
 # Prerequisites
 *.d
