@@ -1,5 +1,10 @@
 /**********************************************************************************
  *
+ *        ▜ ▘▗ ▗ ▜      ▌      ▜   ▌
+ * ▛▛▌▌▌  ▐ ▌▜▘▜▘▐ █▌  ▛▌█▌▌▌  ▐ ▀▌▛▌
+ * ▌▌▌▙▌  ▐▖▌▐▖▐▖▐▖▙▖  ▙▌▙▖▚▘  ▐▖█▌▙▌
+ *    ▄▌
+ *
  * MIT License
  *
  * Copyright (c) 2025-2026 Evgenii Sopov
@@ -21,6 +26,9 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
+ * Original repository: https://github.com/sea5kg/my-little-dev-lab
+ *
  ***********************************************************************************/
 
 #include "mldl/include/webhooks.h"
