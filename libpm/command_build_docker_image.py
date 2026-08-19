@@ -32,58 +32,48 @@
 #
 ##################################################################################
 
-""" Config for a pm """
+""" rebuild images """
 
-import re
 import os
+import sys
+import logging
+from .utils_log import UtilsLog
+from .utils_docker import UtilsDocker
+from .pm_config import PmConfig
 
 
-class PmConfig:
-    """ PmConfig """
+class CommandBuildDockerImage:
+    """ CommandBuildDockerImage """
 
-    def __init__(self, root_dir):
-        self.__root_dir = root_dir
-        self.__re_uuid = re.compile(
-            r'.*\"([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})\".*'
+    def __init__(self, config: PmConfig):
+        self.__log = UtilsLog("CommandBuildDockerImage").get_logger()
+        self.__log.setLevel(logging.DEBUG)
+        self.__config = config
+        self.__subcommand_name = "build-docker-image"
+
+    def get_name(self):
+        """ return subcommand name """
+        return self.__subcommand_name
+
+    def do_registry(self, subparsers):
+        """ registering sub command """
+        desc = "Build docker image (Dockerfile)"
+        _parser_build_image = subparsers.add_parser(
+            name=self.__subcommand_name,
+            description=desc
         )
-        self.__base_tag = "sea5kg/my-little-dev-lab"
-        self.__repo_url = "https://github.com/sea5kg/my-little-dev-lab"
+        _parser_build_image.set_defaults(subparser=self.__subcommand_name)
 
-    def get_root_dir(self):
-        """ return root dir """
-        return self.__root_dir
+    def execute(self, _):
+        """ executing """
+        os.chdir(self.__config.get_root_dir())
+        self.__log.info("Build docker image...")
 
-    def get_re_uuid(self):
-        """ return regular expression for a search uuid in string """
-        return self.__re_uuid
+        tag_build_latest = self.__config.base_docker_tag() + ":latest"
+        # TODO read from wsjcpp.yaml
+        tag_build_version = self.__config.base_docker_tag() + ":v0.1.0"
 
-    def base_docker_tag(self):
-        """ return docker base tag image """
-        return self.__base_tag
+        UtilsDocker.silent_remove_image(tag_build_latest, self.__log)
+        UtilsDocker.build_docker_image(tag_build_latest, "Dockerfile", self.__log)
 
-    def repo_url(self):
-        """ return repository link """
-        return self.__repo_url
-
-class FolderSwitcher:
-    """
-        Change work directory to specify folder
-        And on exit change back work directory
-    """
-    def __init__(self, _log, new_dir):
-        self.__prev = os.getcwd()
-        self.__new_dir = new_dir
-        self.__log = _log
-        os.chdir(self.__new_dir)
-        self.__log.debug(
-            "FolderSwitcher (begin): %s -> %s", self.__prev, self.__new_dir
-        )
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        os.chdir(self.__prev)
-        self.__log.debug(
-            "FolderSwitcher (end): %s -> %s", self.__new_dir, self.__prev
-        )
+        sys.exit(0)

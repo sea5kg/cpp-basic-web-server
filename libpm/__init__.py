@@ -36,6 +36,7 @@
 
 import argparse
 from .pm_config import PmConfig, FolderSwitcher
+from .command_build_docker_image import CommandBuildDockerImage
 from .command_check import CommandCheck
 from .command_rebuild_environment_images import CommandRebuildEnvironmentImages
 from .command_clang_format import CommandClangFormat
@@ -43,6 +44,7 @@ from .command_clean import CommandClean
 from .command_code_stats import CommandCodeStats
 from .command_py_check import CommandPyCheck
 from .utils_copyrights import UtilsCopyrights
+from .utils_docker import UtilsDocker
 from .utils_log import UtilsLog
 from .utils_files import UtilsFiles
 from .utils_shell import UtilsShell
@@ -82,6 +84,7 @@ def make_commands(config):
         CommandCheck(config),
         CommandClangFormat(config),
         CommandRebuildEnvironmentImages(config),
+        CommandBuildDockerImage(config),
     ]
 
 

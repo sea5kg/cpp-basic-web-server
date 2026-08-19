@@ -6,9 +6,11 @@
       "hlogi",
       "libhv",
       "libpm",
+      "libpthread",
       "lpthread",
       "MLDL",
       "MQTT",
+      "noninteractive",
       "Sopov",
       "THREADSAFE",
       "wsjcpp"

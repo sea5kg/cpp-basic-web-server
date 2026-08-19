@@ -38,8 +38,8 @@ import os
 import sys
 import logging
 import datetime
-from .utils_shell import UtilsShell
 from .utils_log import UtilsLog
+from .utils_docker import UtilsDocker
 from .pm_config import PmConfig
 
 
@@ -54,7 +54,6 @@ class CommandRebuildEnvironmentImages:
         self.__dt_tag = now.strftime("%Y-%m-%d")
         self.__subcommand_name = "rebuild-environment-images"
         self.__debian_version = "13"
-        self.__base_tag = "sea5kg/my-little-dev-lab"
         self.__packages = {
             "build": [
                 "make",
@@ -90,6 +89,7 @@ class CommandRebuildEnvironmentImages:
                 "python-is-python3",
                 "telnet",
                 "iputils-ping",
+                "git",
             ],
             "release-python": [
                 "requests",
@@ -117,24 +117,6 @@ class CommandRebuildEnvironmentImages:
         )
         _parser_rebuild_env_images.set_defaults(subparser=self.__subcommand_name)
 
-    def __build_docker_image(self, tag, filename):
-        cmd = "docker build --rm --tag " + tag + " -f " + filename + " ."
-        ret = os.system(cmd)
-        if ret != 0:
-            self.__log.error("ERROR: Could not build image by command: %s", cmd)
-            sys.exit(1)
-
-    def __has_image(self, full_tag):
-        exit_code, output = UtilsShell.run_command_get_output(self.__log, [
-            "docker", "images", full_tag, "--format", "{{json . }}"
-        ])
-        if exit_code != 0:
-            # self.__log.info("exit_code: %s", exit_code)
-            self.__log.error("Could not execute command 'docker images...', output %s", output)
-            sys.exit(-1)
-        # self.__log.info("output: %s", output)
-        return output != ""  # output not empty... so has image
-
     def __update_dockerfile_build_env(self):
         _filename = "Dockerfile.build-environment"
         self.__log.info("Update file %s", _filename)
@@ -145,7 +127,7 @@ class CommandRebuildEnvironmentImages:
 WORKDIR /root/
 
 LABEL "maintainer"="Evgenii Sopov <mrseakg@gmail.com>"
-LABEL "repository"="https://github.com/sea5kg/my-little-dev-lab"
+LABEL "repository"=\"""" + self.__config.repo_url() + """\"
 
 RUN apt-get -y update \\
   && apt-get -y upgrade \\
@@ -165,7 +147,7 @@ RUN apt-get -y update \\
             _file.write("""FROM debian:""" + self.__debian_version + """
 
 LABEL "maintainer"="Evgenii Sopov <mrseakg@gmail.com>"
-LABEL "repository"="https://github.com/sea5kg/my-little-dev-lab"
+LABEL "repository"=\"""" + self.__config.repo_url() + """\"
 
 RUN apt-get -y update \\
   && apt-get -y upgrade \\
@@ -184,14 +166,6 @@ RUN sed -i -e "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /etc/locale.gen && \\
 """)
         return _filename
 
-    def __silent_remove_image(self, image_tag):
-        if self.__has_image(image_tag):
-            self.__log.info("Found image %s, try removing...", image_tag)
-            ret = os.system("docker rmi " + image_tag)
-            if ret != 0:
-                self.__log.error("Could not remove %s", image_tag)
-                sys.exit(1)
-
     def execute(self, _):
         """ executing """
         os.chdir(self.__config.get_root_dir())
@@ -199,22 +173,24 @@ RUN sed -i -e "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /etc/locale.gen && \\
         release_env = self.__update_dockerfile_release_env()
         self.__log.info("Rebuild environment images...")
 
-        tag_build = self.__base_tag
+        tag_build = self.__config.base_docker_tag()
         tag_build_today = tag_build + ":build-environment-" + self.__dt_tag
         tag_build_latest = tag_build + ":build-environment-latest"
-        tag_release = self.__base_tag
+        tag_release = self.__config.base_docker_tag()
         tag_release_today = tag_release + ":release-environment-" + self.__dt_tag
         tag_release_latest = tag_release + ":release-environment-latest"
 
-        self.__silent_remove_image(tag_build_today)
-        self.__build_docker_image(tag_build_today, build_env)
+        # force update
+        os.system("docker pull debian:" + self.__debian_version)
 
-        self.__silent_remove_image(tag_build_latest)
-        self.__build_docker_image(tag_build_latest, build_env)
+        UtilsDocker.silent_remove_image(tag_build_today, self.__log)
+        UtilsDocker.silent_remove_image(tag_build_latest, self.__log)
+        UtilsDocker.silent_remove_image(tag_release_today, self.__log)
+        UtilsDocker.silent_remove_image(tag_release_latest, self.__log)
 
-        self.__silent_remove_image(tag_release_today)
-        self.__build_docker_image(tag_release_today, release_env)
+        UtilsDocker.build_docker_image(tag_build_today, build_env, self.__log)
+        UtilsDocker.build_docker_image(tag_build_latest, build_env, self.__log)
+        UtilsDocker.build_docker_image(tag_release_today, release_env, self.__log)
+        UtilsDocker.build_docker_image(tag_release_latest, release_env, self.__log)
 
-        self.__silent_remove_image(tag_release_latest)
-        self.__build_docker_image(tag_release_latest, release_env)
         sys.exit(0)

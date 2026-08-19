@@ -4,6 +4,8 @@
 /my-little-dev-lab
 /libhv.*.log
 __pycache__
+Dockerfile.build-environment
+Dockerfile.release-environment
 
 # Prerequisites
 *.d
