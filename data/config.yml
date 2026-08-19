@@ -22,4 +22,4 @@ mapping-host-and-path-folders:
   "sea5kg.ru/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
   "localhost/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
   "wsjcpp.org": "${repo-wsjcpp-org}/web"
-  "localhost/wsjcpp_org/": "${repo-wsjcpp-org}/html"
+  "localhost/wsjcpp_org/": "${repo-wsjcpp-org}/web"
