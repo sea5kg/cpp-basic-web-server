@@ -212,4 +212,14 @@ resources:
       pack-as: "text"
       modified: 1782134917
       sha1: "f6f25a324fc21775d96e26f30fe0709b4747d3e9"
+    - filepath: "./data/html/admin/images/logo.svg"
+      size: 13790
+      pack-as: "binary"
+      modified: 1787384467
+      sha1: "19b5b51e73ca974864668f7b52dfb6bc0509a0ff"
+    - filepath: "./data/html/admin/images/logo.png"
+      size: 33549
+      pack-as: "binary"
+      modified: 1787384464
+      sha1: "1c8514b14f2533400b479f18b248df83eb14a48e"
 

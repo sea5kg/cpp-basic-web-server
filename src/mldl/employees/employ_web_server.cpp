@@ -229,13 +229,15 @@ int employ_web_server::httpHandleRequests(HttpRequest *req, HttpResponse *resp) 
     return 404;
   }
 
+  if (request_path == "/admin") {
+    // ctx->set_status_code(HTTP_STATUS_FOUND); // Status 302
+    resp->headers["Location"] = "/admin/";
+    return 302;
+  }
+
   if (wsjcpp::ends_with(request_path, "/")) {
     request_path += "index.html";
   }
-
-  // if (request_path == "/admin" || request_path == "/admin/") {
-  //   request_path = "/index.html";
-  // }
 
   sea5kg::log::info(TAG, "Request path: " + request_path);
   std::string filepath =
