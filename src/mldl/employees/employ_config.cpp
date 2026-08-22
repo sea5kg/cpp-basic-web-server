@@ -155,13 +155,13 @@ std::map<std::string, std::shared_ptr<mldl::repository>> employ_config::reposito
 }
 
 bool employ_config::read_mapping_host_and_path_folders(WsjcppYaml &yaml) {
-  
+
   // hardcoded root page for localhost
   m_mapping["localhost"] = std::map<std::string, std::string>();
   m_mapping["localhost"]["/"] = wsjcpp::normalize_filepath(m_sConfigDir + "/html/");;
   // m_mapping["localhost"]["/admin/"] = admin_path;
 
-  std::string admin_path = wsjcpp::normalize_filepath(m_sConfigDir + "/html/admin");
+  std::string control_panel_path = wsjcpp::normalize_filepath(m_sConfigDir + "/html/control-panel");
 
   if (yaml["mapping-host-and-path-folders"].isMap()) {
     std::vector<std::string> keys = yaml["mapping-host-and-path-folders"].keys();
@@ -198,7 +198,7 @@ bool employ_config::read_mapping_host_and_path_folders(WsjcppYaml &yaml) {
         sea5kg::log::info(TAG, "Init host-name: " + host);
         m_mapping[host] = std::map<std::string, std::string>();
         // hardcoded admin for any host
-        m_mapping[host]["/admin"] = admin_path;
+        m_mapping[host]["/control-panel"] = control_panel_path;
       }
       sea5kg::log::info(TAG, "Registered mapping: " + host + path + " -> " + real_path);
       if (!wsjcpp::dir_exists(real_path)) {

@@ -229,9 +229,9 @@ int employ_web_server::httpHandleRequests(HttpRequest *req, HttpResponse *resp) 
     return 404;
   }
 
-  if (request_path == "/admin") {
+  if (request_path == "/control-panel") {
     // ctx->set_status_code(HTTP_STATUS_FOUND); // Status 302
-    resp->headers["Location"] = "/admin/";
+    resp->headers["Location"] = "/control-panel/";
     return 302;
   }
 

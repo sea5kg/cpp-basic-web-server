@@ -16,7 +16,6 @@ repositories:
     webhook-update: tgNi7sZiQV
 
 mapping-host-and-path-folders:
-  "localhost": "./html"
   "sea5kg.ru": "${repo-sea5kg-ru}/html"
   "localhost/sea5kg_ru": "${repo-sea5kg-ru}/html"
   "sea5kg.ru/pipeline-editor-s5": "${repo-pipeline-editor-s5}/html"
