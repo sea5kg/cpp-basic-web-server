@@ -33,6 +33,7 @@
 
 #include "mldl/include/config.h"
 #include "mldl/include/webhooks.h"
+#include "mldl/include/globals.h"
 #include "mldl/objects/mldl_webhook_git_repo_update.h"
 #include "third_party/smallsha1/smallsha1.h"
 #include <fstream>
@@ -79,6 +80,7 @@ REGISTRY_WSJCPP_EMPLOY(employ_config)
 
 employ_config::employ_config() : WsjcppEmployBase({mldl::config::name()}, {mldl::webhooks::name()}) {
   TAG = "employ_config";
+  m_web_port = mldl::DEFAULT_WEB_PORT;
 }
 
 bool employ_config::init(const std::string &sName, bool bSilent) {
@@ -112,21 +114,21 @@ void employ_config::set_data_dir(const std::string data_dir) {
     sea5kg::log::critical(TAG, "Failed parsing yaml: " + sError);
   }
 
-  m_web_port = yaml["port"].valInt();
+  m_web_port = yaml[mldl::keys::PORT].valInt();
   apply_port_from_env();
 
   // repositories
-  if (yaml["repositories"].isMap()) {
-    std::string repos_dir = m_sConfigDir + "/repositories";
+  if (yaml[mldl::keys::REPOSITORIES].isMap()) {
+    std::string repos_dir = m_sConfigDir + "/" + mldl::keys::REPOSITORIES;
     if (!wsjcpp::dir_exists(repos_dir)) {
       WsjcppCore::makeDirsPath(repos_dir);
     }
-    std::vector<std::string> keys = yaml["repositories"].keys();
+    std::vector<std::string> keys = yaml[mldl::keys::REPOSITORIES].keys();
     for (int i = 0; i < keys.size(); i++) {
       std::shared_ptr<mldl::repository> repo = std::make_shared<mldl::repository>();
       std::string key = keys[i];
       sea5kg::log::info(TAG, "Registered repository key: " + key);
-      WsjcppYamlCursor cur = yaml["repositories"][key];
+      WsjcppYamlCursor cur = yaml[mldl::keys::REPOSITORIES][key];
       if (!repo->read_from_yaml(key, cur)) {
         sea5kg::log::info(TAG, "Skip repository: " + key);
         continue;
@@ -377,29 +379,29 @@ void employ_config::update_files_in_data() {
 
 bool employ_config::apply_port_from_env() {
   std::string str_port;
-  static const std::string env_port = "MLDL_PORT";
-  if (WsjcppCore::getEnv(env_port, str_port)) {
-    sea5kg::log::warning(TAG, env_port + "='" + str_port + "'");
+
+  if (WsjcppCore::getEnv(mldl::keys::MLDL_PORT, str_port)) {
+    sea5kg::log::warning(TAG, mldl::keys::MLDL_PORT + "='" + str_port + "'");
     try {
       int port = std::stoi(str_port);
       std::string err;
       m_web_port = port;
       // if (!m_scoreboard_port->set_value(port, err)) {
-      //   sea5kg::log::err(TAG, env_port + "='" + str_port + "' is wrong. " + err);
+      //   sea5kg::log::err(TAG, mldl::keys::MLDL_PORT + "='" + str_port + "' is wrong. " + err);
       //   return false;
       // }
     } catch (const std::invalid_argument& e) {
-      sea5kg::log::error(TAG, "No conversion could be performed. " + env_port + "='" + str_port + "'");
+      sea5kg::log::error(TAG, "No conversion could be performed. " + mldl::keys::MLDL_PORT + "='" + str_port + "'");
       std::cerr << "Error: \n";
       return false;
     } catch (const std::out_of_range& e) {
-      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + env_port + "='" + str_port + "'");
+      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + mldl::keys::MLDL_PORT + "='" + str_port + "'");
       return false;
     } catch (...) {
-      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + env_port + "='" + str_port + "'");
+      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + mldl::keys::MLDL_PORT + "='" + str_port + "'");
       return false;
     }
-    sea5kg::log::info(TAG, "scoreboard.port will be overridden from environment variable. " + env_port + "='" + str_port + "'");
+    sea5kg::log::info(TAG, "scoreboard.port will be overridden from environment variable. " + mldl::keys::MLDL_PORT + "='" + str_port + "'");
     return true;
   }
   return true;
