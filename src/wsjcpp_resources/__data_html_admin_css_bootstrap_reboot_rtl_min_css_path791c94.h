@@ -2,7 +2,7 @@
 
 #include <wsjcpp_core.h>
 
-class RES___data__gitignore_pathe282c3 : public WsjcppResourceFile {
+class RES___data_html_admin_css_bootstrap_reboot_rtl_min_css_path791c94 : public WsjcppResourceFile {
 public:
   virtual const std::string &getFilename() const override;
   virtual const std::string &getPackAs() const override;
