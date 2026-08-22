@@ -52,6 +52,7 @@ set(EXECUTABLE_OUTPUT_PATH ${my-little-dev-lab_SOURCE_DIR})
 list (APPEND WSJCPP_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src")
 list (APPEND WSJCPP_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/third_party/sqlite3/src")
 
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/third_party/smallsha1/smallsha1.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_config.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_web_server.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_webhooks.cpp")

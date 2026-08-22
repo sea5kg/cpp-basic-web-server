@@ -6,6 +6,7 @@
 __pycache__
 Dockerfile.build-environment
 Dockerfile.release-environment
+/data/files_sha1.json
 
 # Prerequisites
 *.d

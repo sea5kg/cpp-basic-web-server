@@ -1,16 +1,23 @@
 {
   "C_Cpp.clang_format_style": "file",
     "cSpell.words": [
+      "buffert",
       "Evgenii",
       "EVPP",
+      "gamedev",
+      "Hildenborg",
       "hlogi",
       "libhv",
       "libpm",
       "libpthread",
       "lpthread",
+      "Micael",
       "MLDL",
       "MQTT",
       "noninteractive",
+      "Petrosyan",
+      "pycache",
+      "smallsha",
       "Sopov",
       "THREADSAFE",
       "wsjcpp"
