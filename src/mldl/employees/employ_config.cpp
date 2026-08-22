@@ -70,7 +70,7 @@ private:
 
   std::string TAG;
   std::string m_sConfigDir;
-  int m_nPort;
+  int m_web_port;
   std::map<std::string, std::map<std::string, std::string>> m_mapping;
   std::map<std::string, std::shared_ptr<mldl::repository>> m_repositories;
 };
@@ -112,7 +112,7 @@ void employ_config::set_data_dir(const std::string data_dir) {
     sea5kg::log::critical(TAG, "Failed parsing yaml: " + sError);
   }
 
-  m_nPort = yaml["port"].valInt();
+  m_web_port = yaml["port"].valInt();
   apply_port_from_env();
 
   // repositories
@@ -156,7 +156,7 @@ const std::string &employ_config::data_dir() {
 }
 
 int employ_config::web_port() const {
-  return m_nPort;
+  return m_web_port;
 }
 
 std::map<std::string, std::map<std::string, std::string>> employ_config::mapping() const {
@@ -383,7 +383,7 @@ bool employ_config::apply_port_from_env() {
     try {
       int port = std::stoi(str_port);
       std::string err;
-      m_nPort = port;
+      m_web_port = port;
       // if (!m_scoreboard_port->set_value(port, err)) {
       //   sea5kg::log::err(TAG, env_port + "='" + str_port + "' is wrong. " + err);
       //   return false;
