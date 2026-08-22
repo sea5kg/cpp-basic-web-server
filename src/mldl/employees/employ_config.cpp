@@ -366,10 +366,11 @@ void employ_config::update_files_in_data() {
 
     WsjcppResourceFile *pConfigYml = WsjcppResourcesManager::get("./data/config.yml");
     std::string sNewFilepath = wsjcpp::normalize_filepath(m_sConfigDir + "/config.yml");
+    sea5kg::log::info(TAG, "write file: " + sNewFilepath);
     if (!WsjcppCore::writeFile(sNewFilepath, pConfigYml->getBuffer(), pConfigYml->getBufferSize())) {
-      std::cout << "ERROR. Could not write file. " << std::endl;
+      sea5kg::log::error(TAG, "ERROR. Could not write file. file=" + sNewFilepath);
     } else {
-      std::cout << "Successfully created file. " << std::endl;
+      sea5kg::log::success(TAG, "Successfully created file. file=" + sNewFilepath);
     }
   }
 

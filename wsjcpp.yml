@@ -70,12 +70,12 @@ resources:
     - filepath: "./data/html/index.html"
       size: 73
       pack-as: "text"
-      modified: 1787381131
+      modified: 1787386633
       sha1: "28ac90d5003d2596af27efe6aedd7b7d6a406e9d"
     - filepath: "./data/html/control-panel/index.html"
       size: 2881
       pack-as: "text"
-      modified: 1787382535
+      modified: 1787386633
       sha1: "c60fd7ecdb5f6698412250a8d3e71d63c792b629"
     - filepath: "./data/.gitignore"
       size: 47
@@ -85,141 +85,146 @@ resources:
     - filepath: "./data/html/control-panel/js/bootstrap.bundle.min.js"
       size: 80496
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "69f688858b7149c561c4a1fbc496e9e66b3df2fe"
     - filepath: "./data/html/control-panel/js/bootstrap.min.js"
       size: 60539
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "f1b0f902cfd9acc311be63bd1c9938f2ca08d093"
     - filepath: "./data/html/control-panel/js/bootstrap.bundle.min.js.map"
       size: 332111
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "cff33bda5b4a270dce6808227a4b6b7aca107c97"
     - filepath: "./data/html/control-panel/js/bootstrap.min.js.map"
       size: 220618
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "53d8f68546e78ca85462f64e313a9042fb3d2738"
     - filepath: "./data/html/control-panel/js/jquery-3.7.1.js"
       size: 285314
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "4be715e11048c057fdf2ee0fbbfad4dbf3504c55"
     - filepath: "./data/html/control-panel/js/bootstrap.esm.min.js.map"
       size: 222322
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "09ca9df45b9e708b7b044088b8706c44c92cb1b4"
     - filepath: "./data/html/control-panel/js/tooltip.min.js"
       size: 6244
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "fafa995b4a54ee1ba464a27c3e0ca47887d9c37c"
     - filepath: "./data/html/control-panel/js/bootstrap.esm.min.js"
       size: 73811
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "b8bacbc4d0cced8eddb77c8603797b775681012e"
     - filepath: "./data/html/control-panel/js/popper.min.js"
       size: 18594
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "8eeb7bf71e8a978b82a1a198015f14d73d2ea592"
     - filepath: "./data/html/control-panel/js/index.js"
       size: 949
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "84e4a1d9fc3c9f4b133d3000f9d3ebc21ffdff26"
     - filepath: "./data/html/control-panel/css/bootstrap.rtl.min.css"
       size: 232219
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "bf30671186778d11c5545fff39979bffda256de8"
     - filepath: "./data/html/control-panel/css/bootstrap.min.css.map"
       size: 590038
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "36793343e4af459e24f421a215ab305597997e6d"
     - filepath: "./data/html/control-panel/css/bootstrap-grid.min.css.map"
       size: 115912
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "09dfe29421bc3db2e8236c40fc0b6aa8270b54ca"
     - filepath: "./data/html/control-panel/css/bootstrap-reboot.rtl.min.css.map"
       size: 64328
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "593f9f606b86d219e7c71e60b2134737a5f29b56"
     - filepath: "./data/html/control-panel/css/bootstrap.rtl.min.css.map"
       size: 589235
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "e60bdb3d7a3358eb333643d3e2f214064c75d058"
     - filepath: "./data/html/control-panel/css/bootstrap-reboot.min.css.map"
       size: 51660
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "519e30dbb80ee6492b955a48584eea353998dd3c"
     - filepath: "./data/html/control-panel/css/bootstrap-grid.min.css"
       size: 51789
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "d56c19ff1f2cc7cbf52e3c8973dd099e40c1cea8"
     - filepath: "./data/html/control-panel/css/bootstrap.min.css"
       size: 232111
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "7575987f70ee5c91f6a0e771b38c6507e457ab61"
     - filepath: "./data/html/control-panel/css/bootstrap-grid.rtl.min.css.map"
       size: 115989
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "7113d3521b725153ddaf477b2e9e85abb98472eb"
     - filepath: "./data/html/control-panel/css/bootstrap-utilities.min.css"
       size: 85457
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "7721a130c7c9515b02f20f9cadf3a7700b256e9b"
     - filepath: "./data/html/control-panel/css/bootstrap-utilities.rtl.min.css.map"
       size: 180472
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "e0c0cfa3b86a4bb64a559988b41b5083b2029319"
     - filepath: "./data/html/control-panel/css/bootstrap-utilities.min.css.map"
       size: 180636
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "7f031f6fae2a4eca667d1a6a26002bb725775648"
     - filepath: "./data/html/control-panel/css/bootstrap-grid.rtl.min.css"
       size: 51864
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "9667c14d2d250d43d7ed84c386c4d387fd75377a"
     - filepath: "./data/html/control-panel/css/bootstrap-reboot.min.css"
       size: 10205
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "390890d9e43a64e68608e05569e7f8d2fb7a8b29"
     - filepath: "./data/html/control-panel/css/bootstrap-reboot.rtl.min.css"
       size: 10277
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "7c8f2d98d4b3e19789045a0fe85a98e1c7c560de"
     - filepath: "./data/html/control-panel/css/bootstrap-utilities.rtl.min.css"
       size: 85386
       pack-as: "text"
-      modified: 1782134917
+      modified: 1787386633
       sha1: "f6f25a324fc21775d96e26f30fe0709b4747d3e9"
     - filepath: "./data/html/control-panel/images/logo.svg"
       size: 13790
       pack-as: "binary"
-      modified: 1787384467
+      modified: 1787386633
       sha1: "19b5b51e73ca974864668f7b52dfb6bc0509a0ff"
     - filepath: "./data/html/control-panel/images/logo.png"
       size: 33549
       pack-as: "binary"
-      modified: 1787384464
+      modified: 1787386633
       sha1: "1c8514b14f2533400b479f18b248df83eb14a48e"
+    - filepath: "./data/config.yml"
+      size: 723
+      pack-as: "text"
+      modified: 1787384956
+      sha1: "507d03bbfdd9094353f6faff9a7a0364b0c72f95"
 
