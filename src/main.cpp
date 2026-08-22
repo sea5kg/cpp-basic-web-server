@@ -93,23 +93,32 @@ int main(int argc, const char *argv[]) {
   std::cout << "" << std::endl;
 
   // try find config.yml
-  const std::vector<std::string> vPossibleFolders = {"./data", "/root/data/"};
   std::string data_dir = "";
-  for (int i = 0; i < vPossibleFolders.size(); i++) {
-    data_dir = vPossibleFolders[i];
-    if (data_dir[0] != '/') {
-      data_dir = WsjcppCore::getCurrentDirectory() + "/" + data_dir;
+  // Anyway, try read from environment. And override from args.
+  {
+    std::string env_work_dir;
+    if (WsjcppCore::getEnv(mldl::keys::MLDL_DATADIR, env_work_dir)) {
+      std::cout << "Working directory get from environment variable " << mldl::keys::MLDL_DATADIR << ": " << env_work_dir << std::endl;
+      data_dir = env_work_dir;
+    } else {
+      const std::vector<std::string> vPossibleFolders = {"./data", "/root/data/"};
+      for (int i = 0; i < vPossibleFolders.size(); i++) {
+        data_dir = vPossibleFolders[i];
+        if (data_dir[0] != '/') {
+          data_dir = WsjcppCore::getCurrentDirectory() + "/" + data_dir;
+        }
+        data_dir = wsjcpp::normalize_filepath(data_dir);
+        if (wsjcpp::file_exists(data_dir + "/config.yml")) {
+          std::cout << "Automatically detected data-dir: " << data_dir << std::endl;
+          break;
+        }
+      }
     }
-    data_dir = wsjcpp::normalize_filepath(data_dir);
-    if (wsjcpp::file_exists(data_dir + "/config.yml")) {
-      std::cout << "Automatically detected data-dir: " << data_dir << std::endl;
-      break;
+    if (data_dir == "") {
+      sea5kg::log::critical(TAG, "Not found data-dir");
     }
   }
 
-  if (data_dir == "") {
-    sea5kg::log::critical(TAG, "Not found data-dir");
-  }
   std::string error;
   if (!try_apply_mldl_user(data_dir, error)) {
     sea5kg::log::info(TAG, "try_apply_mldl_user: " + error);

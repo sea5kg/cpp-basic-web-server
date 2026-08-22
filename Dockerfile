@@ -17,5 +17,5 @@ LABEL "repository"="https://github.com/sea5kg/my-little-dev-lab"
 RUN mkdir /root/data
 COPY --from=0 /root/my-little-dev-lab /usr/bin/my-little-dev-lab
 
-EXPOSE 8080
+EXPOSE 10233
 CMD ["my-little-dev-lab"]

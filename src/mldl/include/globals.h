@@ -41,6 +41,7 @@ class keys {
 public:
   inline static const std::string MLDL_PORT = "MLDL_PORT";
   inline static const std::string MLDL_USER = "MLDL_USER";
+  inline static const std::string MLDL_DATADIR = "MLDL_DATADIR";
   inline static const std::string PORT = "port";
   inline static const std::string REPOSITORIES = "repositories";
 };
