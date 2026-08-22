@@ -33,6 +33,8 @@
 
 #include "mldl/include/config.h"
 #include "mldl/include/web_server.h"
+#include "mldl/include/globals.h"
+
 #include <sea5kg_logger.h>
 #include <unistd.h>
 #include <wsjcpp_core.h>
@@ -42,18 +44,18 @@ bool try_apply_mldl_user(const std::string &work_dir, std::string &error) {
   // std::cout << "work_dir = " << work_dir << std::endl;
   std::string str_user;
   int user_id = 0;
-  if (WsjcppCore::getEnv("MLDL_USER", str_user)) {
-    std::cout << "MLDL_USER='" << str_user << "'" << std::endl;
+  if (WsjcppCore::getEnv(mldl::keys::MLDL_USER, str_user)) {
+    std::cout << mldl::keys::MLDL_USER << "='" << str_user << "'" << std::endl;
     try {
       user_id = std::stoi(str_user);
     } catch (const std::invalid_argument &e) {
-      std::cerr << "Error: No conversion could be performed. MLDL_USER='" << str_user << "'" << std::endl;
+      std::cerr << "Error: No conversion could be performed. " + mldl::keys::MLDL_USER + "='" << str_user << "'" << std::endl;
       return false;
     } catch (const std::out_of_range &e) {
-      std::cerr << "The converted value is too big for an int.. MLDL_USER='" << str_user << "'" << std::endl;
+      std::cerr << "The converted value is too big for an int.. " + mldl::keys::MLDL_USER + "='" << str_user << "'" << std::endl;
       return false;
     } catch (...) {
-      std::cerr << "The converted value is too big for an int.. MLDL_USER='" << str_user << "'" << std::endl;
+      std::cerr << "The converted value is too big for an int.. " + mldl::keys::MLDL_USER + "='" << str_user << "'" << std::endl;
       return false;
     }
     if (wsjcpp::user_is_root()) {
@@ -68,7 +70,7 @@ bool try_apply_mldl_user(const std::string &work_dir, std::string &error) {
       }
       return wsjcpp::change_current_process_privileges(user_id, error);
     } else if (geteuid() == user_id) {
-      std::cout << " * OK. MLDL_USER is equal with current user" << std::endl;
+      std::cout << " * OK. " + mldl::keys::MLDL_USER + " is equal with current user" << std::endl;
     } else {
       return wsjcpp::change_current_process_privileges(user_id, error);
     }
