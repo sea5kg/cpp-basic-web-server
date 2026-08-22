@@ -66,6 +66,7 @@ private:
   void save_files_sha1(nlohmann::json &files);
   void update_data_html(nlohmann::json &files);
   void update_files_in_data();
+  bool apply_port_from_env();
 
   std::string TAG;
   std::string m_sConfigDir;
@@ -112,6 +113,7 @@ void employ_config::set_data_dir(const std::string data_dir) {
   }
 
   m_nPort = yaml["port"].valInt();
+  apply_port_from_env();
 
   // repositories
   if (yaml["repositories"].isMap()) {
@@ -371,4 +373,34 @@ void employ_config::update_files_in_data() {
 
   update_data_html(previous_files_sha1);
   save_files_sha1(previous_files_sha1);
+}
+
+bool employ_config::apply_port_from_env() {
+  std::string str_port;
+  static const std::string env_port = "MLDL_PORT";
+  if (WsjcppCore::getEnv(env_port, str_port)) {
+    sea5kg::log::warning(TAG, env_port + "='" + str_port + "'");
+    try {
+      int port = std::stoi(str_port);
+      std::string err;
+      m_nPort = port;
+      // if (!m_scoreboard_port->set_value(port, err)) {
+      //   sea5kg::log::err(TAG, env_port + "='" + str_port + "' is wrong. " + err);
+      //   return false;
+      // }
+    } catch (const std::invalid_argument& e) {
+      sea5kg::log::error(TAG, "No conversion could be performed. " + env_port + "='" + str_port + "'");
+      std::cerr << "Error: \n";
+      return false;
+    } catch (const std::out_of_range& e) {
+      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + env_port + "='" + str_port + "'");
+      return false;
+    } catch (...) {
+      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + env_port + "='" + str_port + "'");
+      return false;
+    }
+    sea5kg::log::info(TAG, "scoreboard.port will be overridden from environment variable. " + env_port + "='" + str_port + "'");
+    return true;
+  }
+  return true;
 }
