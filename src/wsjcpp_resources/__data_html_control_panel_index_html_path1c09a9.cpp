@@ -17,17 +17,17 @@ const std::string &RES___data_html_control_panel_index_html_path1c09a9::getPackA
 // ---------------------------------------------------------------------
 
 int RES___data_html_control_panel_index_html_path1c09a9::getBufferSize() const {
-  return 2881;
+  return 2905;
 }
 
 // ---------------------------------------------------------------------
 
 const char *RES___data_html_control_panel_index_html_path1c09a9::getBuffer() const {
-  static const std::string sRet = "" // size: 2881
+  static const std::string sRet = "" // size: 2905
     "<!doctype html>\n"
     "<html>\n"
     "<head>\n"
-    "  <title>My-Little-Dev-Lab</title>\n"
+    "  <title>My-Little-Dev-Lab (Control-Panel)</title>\n"
     "  <meta charset=\"utf-8\"/>\n"
     "  <meta name=\"Keywords\" content=\"my-little-dev-lab\"/>\n"
     "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
@@ -44,7 +44,7 @@ const char *RES___data_html_control_panel_index_html_path1c09a9::getBuffer() con
     "<body>\n"
     "  <nav class=\"navbar navbar-expand-lg navbar-light bg-light\">\n"
     "  <div class=\"container-fluid\">\n"
-    "    <a class=\"navbar-brand\" href=\"#\">My-Little-Dev-Lab (Admin)</a>\n"
+    "    <a class=\"navbar-brand\" href=\"#\">My-Little-Dev-Lab (Control-Panel)</a>\n"
     "    <button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">\n"
     "      <span class=\"navbar-toggler-icon\"></span>\n"
     "    </button>\n"

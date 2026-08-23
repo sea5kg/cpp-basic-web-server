@@ -356,16 +356,26 @@ void employ_config::update_files_in_data() {
   nlohmann::json previous_files_sha1 = load_files_sha1();
 
   if (!wsjcpp::file_exists(m_sConfigDir + "/config.yml")) {
-    sea5kg::log::warning(TAG, "Extracting config.yml and files");
-
-    const std::vector<WsjcppResourceFile *> &vFiles = WsjcppResourcesManager::list();
-    std::vector<std::string> vExecutableFiles;
+    sea5kg::log::info(TAG, "Extracting config.yml");
+    // const std::vector<WsjcppResourceFile *> &vFiles = WsjcppResourcesManager::list();
+    // std::vector<std::string> vExecutableFiles;
     // for (int i = 0; i < vFiles.size(); i++) {
     //   std::string filepath = vFiles[i]->getFilename();
     // }
 
     WsjcppResourceFile *pConfigYml = WsjcppResourcesManager::get("./data/config.yml");
     std::string sNewFilepath = wsjcpp::normalize_filepath(m_sConfigDir + "/config.yml");
+    sea5kg::log::info(TAG, "write file: " + sNewFilepath);
+    if (!WsjcppCore::writeFile(sNewFilepath, pConfigYml->getBuffer(), pConfigYml->getBufferSize())) {
+      sea5kg::log::error(TAG, "ERROR. Could not write file. file=" + sNewFilepath);
+    } else {
+      sea5kg::log::success(TAG, "Successfully created file. file=" + sNewFilepath);
+    }
+  }
+  if (!wsjcpp::file_exists(m_sConfigDir + ".gitignore")) {
+    sea5kg::log::info(TAG, ".gitignore");
+    WsjcppResourceFile *pConfigYml = WsjcppResourcesManager::get("./data/.gitignore");
+    std::string sNewFilepath = wsjcpp::normalize_filepath(m_sConfigDir + "/.gitignore");
     sea5kg::log::info(TAG, "write file: " + sNewFilepath);
     if (!WsjcppCore::writeFile(sNewFilepath, pConfigYml->getBuffer(), pConfigYml->getBufferSize())) {
       sea5kg::log::error(TAG, "ERROR. Could not write file. file=" + sNewFilepath);

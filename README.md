@@ -1,7 +1,5 @@
 # my-little-dev-lab
 
-(In progress)
-
 A minimalist platform for content development and management, as well as for setting up various processes
 
 ## Fast start via docker-compose.yml
@@ -31,3 +29,5 @@ networks:
   mldl_net:
     driver: bridge
 ```
+
+See: http://localhost:10233/control-panel

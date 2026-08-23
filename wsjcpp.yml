@@ -73,10 +73,10 @@ resources:
       modified: 1787386633
       sha1: "28ac90d5003d2596af27efe6aedd7b7d6a406e9d"
     - filepath: "./data/html/control-panel/index.html"
-      size: 2881
+      size: 2905
       pack-as: "text"
-      modified: 1787386633
-      sha1: "c60fd7ecdb5f6698412250a8d3e71d63c792b629"
+      modified: 1787462351
+      sha1: "13c89f6e14df9f68baf5724e9f5f20fd8203dc1a"
     - filepath: "./data/.gitignore"
       size: 47
       pack-as: "text"
