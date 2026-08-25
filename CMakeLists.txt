@@ -56,6 +56,7 @@ list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/third_party/smallsha1/small
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_config.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_web_server.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/employees/employ_webhooks.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/objects/mldl_database_file.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/objects/mldl_repository.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/objects/mldl_webhook_git_repo_update.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/mldl/objects/mldl_webhook.cpp")
