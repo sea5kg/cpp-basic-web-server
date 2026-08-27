@@ -130,13 +130,13 @@ int main(int argc, const char *argv[]) {
   sea5kg::log::set_log_dirpath(log_dir);
   sea5kg::log::set_log_filename_prefix("mldl_");
 
+  auto *pConfig = findWsjcppEmploy<mldl::config>();
+  pConfig->set_data_dir(data_dir);
+
   WsjcppEmployeesInit employees({}, false);
   if (!employees.initialized) {
     return -1;
   }
-
-  auto *pConfig = findWsjcppEmploy<mldl::config>();
-  pConfig->set_data_dir(data_dir);
 
   sea5kg::log::success(TAG, "Starting scoreboard on http://localhost:" + std::to_string(pConfig->web_port()) + "/");
 
