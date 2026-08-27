@@ -1,6 +1,7 @@
 /tmp
 /test
 /data2
+/data/db/*
 /.wsjcpp
 /data/logs
 /my-little-dev-lab

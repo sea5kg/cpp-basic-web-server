@@ -32,12 +32,52 @@
  ***********************************************************************************/
 
 #include "mldl_database_file.h"
+#include <sea5kg_logger.h>
 #include <sqlite3.h>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
-#include <sea5kg_logger.h>
 
 namespace mldl {
+
+// ---------------------------------------------------------------------
+// database_file_update_info
+
+database_file_update_info::database_file_update_info(const std::string &sVersionFrom, const std::string &sVersionTo,
+                                               const std::string &sDescription)
+    : m_sVersionFrom(sVersionFrom), m_sVersionTo(sVersionTo), m_sDescription(sDescription) {
+}
+
+const std::string &database_file_update_info::versionFrom() const {
+  return m_sVersionFrom;
+}
+
+const std::string &database_file_update_info::versionTo() const {
+  return m_sVersionTo;
+}
+
+const std::string &database_file_update_info::description() const {
+  return m_sDescription;
+}
+
+// ---------------------------------------------------------------------
+// DatabaseFileUpdate
+
+database_file_update::database_file_update(const std::string &sVersionFrom, const std::string &sVersionTo,
+                                       const std::string &sDescription)
+    : m_updateInfo(sVersionFrom, sVersionTo, sDescription) {
+}
+
+const database_file_update_info &database_file_update::info() {
+  return m_updateInfo;
+};
+
+void database_file_update::setWeight(int nWeight) {
+  m_nWeight = nWeight;
+}
+
+int database_file_update::getWeight() {
+  return m_nWeight;
+}
 
 std::map<std::string, database_file *> *g_opened_database_files = nullptr;
 
@@ -45,12 +85,12 @@ std::map<std::string, database_file *> *g_opened_database_files = nullptr;
 void global_databases::add_opened_database_file(const std::string &name, database_file *db) {
   if (g_opened_database_files == nullptr) {
     // sea5kg::log::info(std::string(), "Create employees map");
-    g_opened_database_files = new std::map<std::string, database_file*>();
+    g_opened_database_files = new std::map<std::string, database_file *>();
   }
   if (g_opened_database_files->find(name) != g_opened_database_files->end()) {
     sea5kg::log::critical("WsjcppEmployees::addService", "Already registered '" + name + "'");
   } else {
-    g_opened_database_files->insert(std::pair<std::string, database_file*>(name, db));
+    g_opened_database_files->insert(std::pair<std::string, database_file *>(name, db));
   }
 }
 
@@ -64,7 +104,7 @@ bool global_databases::init_driver_sqlite3(int &ret) {
 void global_databases::shutdown_driver_sqlite3() {
   // will be automatically closed all opened databases
   if (g_opened_database_files != nullptr) {
-    for (const auto& pair : *g_opened_database_files) {
+    for (const auto &pair : *g_opened_database_files) {
       pair.second->close();
     }
   }
@@ -75,15 +115,14 @@ class impl_database_select_rows : public database_select_rows {
 public:
   impl_database_select_rows();
   ~impl_database_select_rows();
-  void setQuery(sqlite3_stmt* pQuery);
+  void setQuery(sqlite3_stmt *pQuery);
   virtual bool next() override;
   virtual std::string getString(int nColumnNumber) override;
   virtual long getLong(int nColumnNumber) override;
 
 private:
-  sqlite3_stmt* m_pQuery;
+  sqlite3_stmt *m_pQuery;
 };
-
 
 impl_database_select_rows::impl_database_select_rows() {
   m_pQuery = nullptr;
@@ -95,12 +134,12 @@ impl_database_select_rows::~impl_database_select_rows() {
   }
 }
 
-void impl_database_select_rows::setQuery(sqlite3_stmt* pQuery) {
+void impl_database_select_rows::setQuery(sqlite3_stmt *pQuery) {
   m_pQuery = pQuery;
 }
 
 bool impl_database_select_rows::next() {
-  return  sqlite3_step(m_pQuery) == SQLITE_ROW;
+  return sqlite3_step(m_pQuery) == SQLITE_ROW;
 }
 
 std::string impl_database_select_rows::getString(int nColumnNumber) {
@@ -114,13 +153,12 @@ long impl_database_select_rows::getLong(int nColumnNumber) {
 // ---------------------------------------------------------------------
 // database_file
 
-database_file::database_file(const std::string &db_dir, const std::string &sFilename, const std::string &sSqlCreateTable) {
-  TAG = "database_file-" + sFilename;
+database_file::database_file(const std::string &db_dir, const std::string &filename) {
+  TAG = "database_file-" + filename;
   m_database_file_db = nullptr;
-  m_sFilename = sFilename;
+  m_filename = filename;
   std::string sError;
   m_nLastBackupTime = 0;
-  m_sSqlCreateTable = sSqlCreateTable;
   if (!wsjcpp::dir_exists(db_dir)) {
     if (!WsjcppCore::makeDir(db_dir)) {
       sea5kg::log::critical(TAG, "Could not create dir " + db_dir);
@@ -129,7 +167,7 @@ database_file::database_file(const std::string &db_dir, const std::string &sFile
       sea5kg::log::critical(TAG, sError);
     }
   }
-  m_sFileFullpath = db_dir + "/" + m_sFilename;
+  m_sFileFullpath = db_dir + "/" + m_filename;
 
   std::string sDatabaseBackupDir = db_dir + "/backups";
   if (!wsjcpp::dir_exists(sDatabaseBackupDir)) {
@@ -140,7 +178,7 @@ database_file::database_file(const std::string &db_dir, const std::string &sFile
       sea5kg::log::critical(TAG, sError);
     }
   }
-  m_sBaseFileBackupFullpath = sDatabaseBackupDir + "/" + m_sFilename;
+  m_sBaseFileBackupFullpath = sDatabaseBackupDir + "/" + m_filename;
 };
 
 database_file::~database_file() {
@@ -150,30 +188,40 @@ database_file::~database_file() {
 bool database_file::open() {
   // open connection to a DB
   sqlite3 *db = (sqlite3 *)m_database_file_db;
-  int nRet = sqlite3_open_v2(
-    m_sFileFullpath.c_str(),
-    &db,
-    SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
-    NULL
-  );
+  int nRet = sqlite3_open_v2(m_sFileFullpath.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
   if (nRet != SQLITE_OK) {
     sea5kg::log::critical(TAG, "Failed to open conn: " + std::to_string(nRet));
     return false;
   }
   m_database_file_db = db;
 
-  // Run the SQL (convert the string to a C-String with c_str() )
-  char *zErrMsg = 0;
-  nRet = sqlite3_exec((sqlite3 *)m_database_file_db, m_sSqlCreateTable.c_str(), 0, 0, &zErrMsg);
-  if (nRet != SQLITE_OK) {
-    sea5kg::log::error(TAG, "Could not create table: " + m_sSqlCreateTable);
-    std::string error_msg = "";
-    if (zErrMsg != 0) {
-      error_msg = std::string(zErrMsg);
+  const std::string sSqlCheckVersionTable =
+      "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='db_version';";
+
+  int nCount = selectSumOrCount(sSqlCheckVersionTable.c_str());
+  if (nCount == 0) {
+    // create db_version
+    const std::string sSqlCreateDbVersion = "CREATE TABLE IF NOT EXISTS db_version ( "
+                                            "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                            "  version_from VARCHAR(64),"
+                                            "  version_to VARCHAR(64),"
+                                            "  dt INTEGER NOT NULL,"
+                                            "  description VARCHAR(2048) NOT NULL"
+                                            ");";
+    char *zErrMsg = 0;
+    nRet = sqlite3_exec(db, sSqlCreateDbVersion.c_str(), 0, 0, &zErrMsg);
+    if (nRet != SQLITE_OK) {
+      sea5kg::log::critical(TAG, "Problem with create table: " + std::string(zErrMsg));
+      return false;
     }
-    sea5kg::log::critical(TAG, "Problem with create table: " + error_msg);
-    return false;
+    sea5kg::log::info(TAG, "Created table db_version in " + m_sFileFullpath);
   }
+
+  // if (!installUpdates()) {
+  //   sea5kg::log::critical(TAG, "Problem with install updates");
+  //   return false;
+  // }
+
   sea5kg::log::success(TAG, "Opened database file " + m_sFileFullpath);
   copy_database_to_backup();
   mldl::global_databases::add_opened_database_file(m_sFileFullpath, this);
@@ -201,29 +249,36 @@ bool database_file::executeQuery(std::string sql_query) {
 
 int database_file::selectSumOrCount(std::string sSqlSelectCount) {
   copy_database_to_backup();
-  sqlite3_stmt* pQuery = nullptr;
+  sqlite3_stmt *pQuery = nullptr;
   int ret = sqlite3_prepare_v2((sqlite3 *)m_database_file_db, sSqlSelectCount.c_str(), -1, &pQuery, NULL);
   // prepare the statement
   if (ret != SQLITE_OK) {
-    sea5kg::log::critical(TAG, "Failed to prepare select count: " + std::string(sqlite3_errmsg((sqlite3 *)m_database_file_db)) + "\n SQL-query: " + sSqlSelectCount);
+    sea5kg::log::critical(
+        TAG, "Failed to prepare select count: " + std::string(sqlite3_errmsg((sqlite3 *)m_database_file_db)) +
+                 "\n SQL-query: " + sSqlSelectCount);
   }
   // step to 1st row of data
   ret = sqlite3_step(pQuery);
   if (ret != SQLITE_ROW) { // see documentation, this can return more values as success
-    sea5kg::log::critical(TAG, "Failed to step for select count or sum: " + std::string(sqlite3_errmsg((sqlite3 *)m_database_file_db)) + "\n SQL-query: " + sSqlSelectCount);
+    sea5kg::log::critical(
+        TAG, "Failed to step for select count or sum: " + std::string(sqlite3_errmsg((sqlite3 *)m_database_file_db)) +
+                 "\n SQL-query: " + sSqlSelectCount);
   }
   int nRet = sqlite3_column_int(pQuery, 0);
-  if (pQuery != nullptr) sqlite3_finalize(pQuery);
+  if (pQuery != nullptr)
+    sqlite3_finalize(pQuery);
   return nRet;
 }
 
 std::shared_ptr<database_select_rows> database_file::selectRows(std::string sqlSelectRows) {
   copy_database_to_backup();
-  sqlite3_stmt* pQuery = nullptr;
+  sqlite3_stmt *pQuery = nullptr;
   int nRet = sqlite3_prepare_v2((sqlite3 *)m_database_file_db, sqlSelectRows.c_str(), -1, &pQuery, NULL);
   // prepare the statement
   if (nRet != SQLITE_OK) {
-    sea5kg::log::critical(TAG, "Failed to prepare select rows: " + std::string(sqlite3_errmsg((sqlite3 *)m_database_file_db)) + "\n SQL-query: " + sqlSelectRows);
+    sea5kg::log::critical(
+        TAG, "Failed to prepare select rows: " + std::string(sqlite3_errmsg((sqlite3 *)m_database_file_db)) +
+                 "\n SQL-query: " + sqlSelectRows);
     return nullptr;
   }
   auto selectRows = std::make_shared<impl_database_select_rows>();
@@ -248,7 +303,7 @@ void database_file::copy_database_to_backup() {
   }
   for (int i = nMaxBackupsFiles - 1; i >= 0; i--) {
     std::string sFilebackupFrom = m_sBaseFileBackupFullpath + "." + std::to_string(i);
-    std::string sFilebackupTo = m_sBaseFileBackupFullpath + "." + std::to_string(i+1);
+    std::string sFilebackupTo = m_sBaseFileBackupFullpath + "." + std::to_string(i + 1);
     if (wsjcpp::file_exists(sFilebackupFrom)) {
       if (std::rename(sFilebackupFrom.c_str(), sFilebackupTo.c_str())) {
         sea5kg::log::critical(TAG, "Could not rename from " + sFilebackupFrom + " to " + sFilebackupTo);

@@ -40,18 +40,18 @@
 
 namespace mldl {
 
-class config {
+class uuid {
 public:
   static std::string name() {
-    return "config";
+    return "UUID";
   }
 
-  virtual void set_data_dir(const std::string sConfigDir) = 0;
-  virtual const std::string &data_dir() = 0;
-  virtual const std::string &database_dir() = 0;
-  virtual int web_port() const = 0;
-  virtual std::map<std::string, std::map<std::string, std::string>> mapping() const = 0;
-  virtual std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const = 0;
+  virtual void add_allowed_type(const std::string &type_of_object) = 0;
+  virtual const std::vector<std::string> &allowed_types() = 0;
+  virtual std::string generate_new_uuid(const std::string &type_of_object) = 0;
+  virtual bool has(const std::string &sUuid) = 0;
+  virtual std::string type_of_object(const std::string &sUuid) = 0;
+  virtual bool remove_uuid(const std::string &sUuid) = 0;
 };
 
 } // namespace mldl

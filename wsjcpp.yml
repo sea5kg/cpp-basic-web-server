@@ -70,6 +70,7 @@ dependencies:
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/sea5kg_sql_builder"
     installation-datetime: "Thu, 27 Aug 2026 06:20:33 GMT"
+
 resources:
   output-generation-dir: src/wsjcpp_resources
   files:

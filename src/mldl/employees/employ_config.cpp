@@ -47,9 +47,6 @@
 class employ_config : public WsjcppEmployBase, public mldl::config {
 public:
   employ_config();
-  static std::string name() {
-    return "CONFIG";
-  }
 
   virtual bool init(const std::string &sName, bool bSilent) override;
   virtual bool deinit(const std::string &sName, bool bSilent) override;
@@ -57,6 +54,7 @@ public:
   // mldl::config
   virtual void set_data_dir(const std::string sConfigDir) override;
   virtual const std::string &data_dir() override;
+  virtual const std::string &database_dir() override;
   virtual int web_port() const override;
   virtual std::map<std::string, std::map<std::string, std::string>> mapping() const override;
   virtual std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const override;
@@ -71,6 +69,7 @@ private:
 
   std::string TAG;
   std::string m_sConfigDir;
+  std::string m_database_dir;
   int m_web_port;
   std::map<std::string, std::map<std::string, std::string>> m_mapping;
   std::map<std::string, std::shared_ptr<mldl::repository>> m_repositories;
@@ -151,10 +150,19 @@ void employ_config::set_data_dir(const std::string data_dir) {
   if (!read_mapping_host_and_path_folders(yaml)) {
     sea5kg::log::critical(TAG, "Some problem with reading mapping");
   }
+
+  m_database_dir = wsjcpp::normalize_filepath(m_sConfigDir + "/db");
+  if (!wsjcpp::dir_exists(m_database_dir)) {
+    WsjcppCore::makeDirsPath(m_database_dir);
+  }
 }
 
 const std::string &employ_config::data_dir() {
   return m_sConfigDir;
+}
+
+const std::string &employ_config::database_dir() {
+  return m_database_dir;
 }
 
 int employ_config::web_port() const {

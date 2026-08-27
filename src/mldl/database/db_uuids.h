@@ -33,25 +33,20 @@
 
 #pragma once
 
-#include "../objects/mldl_repository.h"
-#include "../objects/mldl_webhook.h"
-#include <memory>
-#include <string>
+#include "mldl/objects/mldl_database_file.h"
 
-namespace mldl {
+#include <map>
 
-class config {
+class database_uuids : public DatabaseFile {
 public:
-  static std::string name() {
-    return "config";
-  }
+  database_uuids();
+  ~database_uuids();
 
-  virtual void set_data_dir(const std::string sConfigDir) = 0;
-  virtual const std::string &data_dir() = 0;
-  virtual const std::string &database_dir() = 0;
-  virtual int web_port() const = 0;
-  virtual std::map<std::string, std::map<std::string, std::string>> mapping() const = 0;
-  virtual std::map<std::string, std::shared_ptr<mldl::repository>> repositories() const = 0;
+  std::map<std::string, std::string> getAllRecords();
+  bool insertUuid(const std::string &sUuid, const std::string &sTypeOfObject);
+  bool deleteUuid(const std::string &sUuid);
+
+private:
+  std::mutex m_mutex;
+  std::string TAG;
 };
-
-} // namespace mldl
